@@ -2,9 +2,8 @@
 
 import mysql.connector
 
-from datos.conexion import BaseDeDatos
-from datos.repositorios import TiendaRepositorio
-from negocio.servicios import TiendaServicio
+from datos.models import BaseDeDatos, TiendaRepositorio
+from negocio import TiendaServicio
 from presentacion.menu import menu_principal
 
 
