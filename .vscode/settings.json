@@ -1,0 +1,23 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv",
+  "python.terminal.activateEnvironment": true,
+  "explorer.sortOrder": "default",
+  "files.exclude": {
+    ".venv": true,
+    "tienda.db": true,
+    "**/__pycache__": true,
+    "**/*.pyc": true
+  },
+  "sqltools.connections": [
+    {
+      "name": "Tienda Online (XAMPP)",
+      "driver": "MySQL",
+      "server": "127.0.0.1",
+      "port": 3306,
+      "database": "tienda_online",
+      "username": "root",
+      "password": "",
+      "previewLimit": 50
+    }
+  ]
+}

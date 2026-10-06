@@ -11,6 +11,14 @@ def main() -> None:
     try:
         base_datos = BaseDeDatos()
         base_datos.inicializar()
+        if not base_datos.probar_conexion():
+            raise mysql.connector.Error(
+                "La prueba de conexión no respondió correctamente."
+            )
+        print(
+            f"Conexión exitosa con la base '{base_datos.nombre}' "
+            f"en {base_datos.servidor}."
+        )
         repositorio = TiendaRepositorio(base_datos)
         menu_principal(TiendaServicio(repositorio), repositorio)
     except (mysql.connector.Error, FileNotFoundError, ValueError) as error:
