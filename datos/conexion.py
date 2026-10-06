@@ -1,47 +1,43 @@
-from __future__ import annotations
+"""Conexión y creación reproducible de la base de datos."""
 
-from contextlib import contextmanager
-import os
-from pathlib import Path
 from collections.abc import Iterator
+from contextlib import contextmanager
+from pathlib import Path
 
 import mysql.connector
 from mysql.connector.connection import MySQLConnection
 
+from datos.configuracion import ConfiguracionBD
 
-DIRECTORIO_PROYECTO = Path(__file__).resolve().parent
-RUTA_ESQUEMA = DIRECTORIO_PROYECTO / "schema.sql"
+
+RUTA_ESQUEMA = Path(__file__).resolve().parent / "sql" / "001_esquema.sql"
 
 
 class BaseDeDatos:
-    """Administra la conexión con MariaDB incluida en XAMPP."""
+    """Administra conexiones y transacciones con MariaDB/MySQL."""
 
-    def __init__(self) -> None:
-        self._host = os.getenv("DB_HOST", "127.0.0.1")
-        self._puerto = int(os.getenv("DB_PORT", "3306"))
-        self._base = os.getenv("DB_NAME", "tienda_online")
-        self._usuario = os.getenv("DB_USER", "root")
-        self._contrasena = os.getenv("DB_PASSWORD", "")
+    def __init__(self, configuracion: ConfiguracionBD | None = None) -> None:
+        self._configuracion = configuracion or ConfiguracionBD.desde_entorno()
 
     @property
     def nombre(self) -> str:
-        return self._base
+        return self._configuracion.nombre
 
     @property
     def servidor(self) -> str:
-        return f"{self._host}:{self._puerto}"
+        return f"{self._configuracion.host}:{self._configuracion.puerto}"
 
     def conectar(self, incluir_base: bool = True) -> MySQLConnection:
         parametros: dict[str, object] = {
-            "host": self._host,
-            "port": self._puerto,
-            "user": self._usuario,
-            "password": self._contrasena,
+            "host": self._configuracion.host,
+            "port": self._configuracion.puerto,
+            "user": self._configuracion.usuario,
+            "password": self._configuracion.contrasena,
             "charset": "utf8mb4",
             "autocommit": False,
         }
         if incluir_base:
-            parametros["database"] = self._base
+            parametros["database"] = self.nombre
         return mysql.connector.connect(**parametros)
 
     @contextmanager
@@ -57,22 +53,22 @@ class BaseDeDatos:
             conexion.close()
 
     def inicializar(self) -> None:
-        if not RUTA_ESQUEMA.exists():
+        if not RUTA_ESQUEMA.is_file():
             raise FileNotFoundError(f"No se encontró el esquema: {RUTA_ESQUEMA}")
 
         conexion = self.conectar(incluir_base=False)
         try:
             with conexion.cursor() as cursor:
                 cursor.execute(
-                    f"CREATE DATABASE IF NOT EXISTS `{self._base}` "
+                    f"CREATE DATABASE IF NOT EXISTS `{self.nombre}` "
                     "CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
                 )
             conexion.commit()
         finally:
             conexion.close()
 
-        sentencias = []
-        acumulada = []
+        sentencias: list[str] = []
+        acumulada: list[str] = []
         for linea in RUTA_ESQUEMA.read_text(encoding="utf-8").splitlines():
             limpia = linea.strip()
             if not limpia or limpia.startswith("--"):
@@ -95,8 +91,7 @@ class BaseDeDatos:
             try:
                 with conexion.cursor() as cursor:
                     cursor.execute("SELECT 1, DATABASE()")
-                    resultado = cursor.fetchone()
-                return resultado == (1, self._base)
+                    return cursor.fetchone() == (1, self.nombre)
             finally:
                 conexion.close()
         except mysql.connector.Error:

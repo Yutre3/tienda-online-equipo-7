@@ -25,9 +25,8 @@ class Entidad(ABC):
 
 
 class Cliente(Entidad):
-    def __init__(
-        self, nombre: str, correo: str, identificador: int | None = None
-    ) -> None:
+    def __init__(self, nombre: str, correo: str,
+                 identificador: int | None = None) -> None:
         super().__init__(identificador)
         self.nombre = nombre
         self.correo = correo
@@ -56,14 +55,8 @@ class Cliente(Entidad):
 
 
 class Producto(Entidad):
-    def __init__(
-        self,
-        nombre: str,
-        descripcion: str,
-        precio_centavos: int,
-        stock: int,
-        identificador: int | None = None,
-    ) -> None:
+    def __init__(self, nombre: str, descripcion: str, precio_centavos: int,
+                 stock: int, identificador: int | None = None) -> None:
         super().__init__(identificador)
         self.nombre = nombre
         self.descripcion = descripcion
@@ -118,13 +111,9 @@ class Producto(Entidad):
 
 
 class DetallePedido(Entidad):
-    def __init__(
-        self,
-        producto: Producto,
-        cantidad: int,
-        precio_unitario_centavos: int | None = None,
-        identificador: int | None = None,
-    ) -> None:
+    def __init__(self, producto: Producto, cantidad: int,
+                 precio_unitario_centavos: int | None = None,
+                 identificador: int | None = None) -> None:
         super().__init__(identificador)
         if not isinstance(producto, Producto):
             raise TypeError("El detalle debe contener un producto válido.")
@@ -157,20 +146,16 @@ class DetallePedido(Entidad):
 class Pedido(Entidad):
     ESTADOS_VALIDOS = {"CREADO", "CONFIRMADO", "CANCELADO"}
 
-    def __init__(
-        self,
-        cliente: Cliente,
-        estado: str = "CREADO",
-        total_centavos: int = 0,
-        identificador: int | None = None,
-    ) -> None:
+    def __init__(self, cliente: Cliente, estado: str = "CREADO",
+                 total_centavos: int = 0,
+                 identificador: int | None = None) -> None:
         super().__init__(identificador)
         if not isinstance(cliente, Cliente):
             raise TypeError("El pedido debe pertenecer a un cliente válido.")
         if estado not in self.ESTADOS_VALIDOS:
             raise ValueError("El estado del pedido no es válido.")
-        if total_centavos < 0:
-            raise ValueError("El total del pedido no puede ser negativo.")
+        if not isinstance(total_centavos, int) or total_centavos < 0:
+            raise ValueError("El total del pedido debe ser un entero no negativo.")
         self._cliente = cliente
         self._estado = estado
         self._total_centavos = total_centavos

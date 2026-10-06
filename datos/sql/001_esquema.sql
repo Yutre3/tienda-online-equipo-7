@@ -1,3 +1,6 @@
+-- Base de datos de la tienda en línea del Equipo 7.
+-- Este archivo puede importarse directamente desde phpMyAdmin.
+
 CREATE DATABASE IF NOT EXISTS tienda_online
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
