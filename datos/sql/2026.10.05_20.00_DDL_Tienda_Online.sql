@@ -1,9 +1,5 @@
--- Base de datos de la tienda en línea del Equipo 7.
--- Este archivo puede importarse directamente desde phpMyAdmin.
-
 CREATE DATABASE IF NOT EXISTS tienda_online
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 USE tienda_online;
 
@@ -44,8 +40,7 @@ CREATE TABLE IF NOT EXISTS pedidos (
     PRIMARY KEY (id),
     KEY idx_pedidos_cliente (cliente_id),
     CONSTRAINT fk_pedidos_cliente FOREIGN KEY (cliente_id)
-        REFERENCES clientes(id)
-        ON UPDATE CASCADE ON DELETE RESTRICT
+        REFERENCES clientes(id) ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS detalles_pedido (
@@ -59,11 +54,9 @@ CREATE TABLE IF NOT EXISTS detalles_pedido (
     UNIQUE KEY uq_detalle_pedido_producto (pedido_id, producto_id),
     KEY idx_detalles_producto (producto_id),
     CONSTRAINT fk_detalles_pedido FOREIGN KEY (pedido_id)
-        REFERENCES pedidos(id)
-        ON UPDATE CASCADE ON DELETE CASCADE,
+        REFERENCES pedidos(id) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT fk_detalles_producto FOREIGN KEY (producto_id)
-        REFERENCES productos(id)
-        ON UPDATE CASCADE ON DELETE RESTRICT,
+        REFERENCES productos(id) ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT chk_detalles_cantidad CHECK (cantidad > 0),
     CONSTRAINT chk_detalles_precio CHECK (precio_unitario_centavos > 0),
     CONSTRAINT chk_detalles_subtotal CHECK (subtotal_centavos > 0)

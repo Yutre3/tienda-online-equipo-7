@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 .env
 tienda.db
+.vscode/
+*.code-workspace
 .coverage
 htmlcov/
 .pytest_cache/
