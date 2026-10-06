@@ -29,6 +29,7 @@ TI3021_U2_EF01/
 ├── presentacion/menu.py           # interfaz por consola
 ├── scripts/                       # creación y verificación de la base
 ├── tests/                         # pruebas unitarias y de integración
+├── .vscode/                       # ejecución, tareas, extensiones y SQLTools
 ├── diagrama_uml.puml              # modelo UML del proyecto
 ├── .env.example                   # plantilla de conexión sin secretos
 ├── requirements.txt               # dependencias declaradas
@@ -98,6 +99,18 @@ La aplicación obtiene sus datos únicamente desde `.env`. Si usa SQLTools y sus
 credenciales son diferentes, edite la conexión desde la interfaz de la extensión;
 no guarde una contraseña real en `.vscode/settings.json` porque ese archivo sí se
 comparte por Git.
+
+Desde **Terminal > Ejecutar tarea** están disponibles, en orden:
+
+1. Instalar dependencias.
+2. Crear la base de datos.
+3. Verificar el sistema.
+4. Ejecutar las pruebas.
+5. Ejecutar la tienda.
+
+La tarea **Preparar proyecto completo** ejecuta automáticamente los tres primeros
+pasos. Antes de usarla, MySQL debe estar iniciado en XAMPP y `.env` debe contener
+la configuración correcta del computador.
 
 ## Configurar la base de datos
 
