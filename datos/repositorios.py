@@ -3,6 +3,7 @@
 import mysql.connector
 
 from datos.conexion import BaseDeDatos
+from datos.models import cliente_desde_fila, pedido_desde_fila, producto_desde_fila
 from negocio.entidades import Cliente, DetallePedido, Pedido, Producto
 
 
@@ -82,7 +83,7 @@ class TiendaRepositorio:
         )
         if fila is None:
             raise ValueError("No existe un cliente con ese identificador.")
-        return Cliente(fila["nombre"], fila["correo"], fila["id"])
+        return cliente_desde_fila(fila)
 
     def obtener_producto(self, identificador: int) -> Producto:
         fila = self._una_fila(
@@ -91,8 +92,7 @@ class TiendaRepositorio:
         )
         if fila is None:
             raise ValueError("No existe un producto con ese identificador.")
-        return Producto(fila["nombre"], fila["descripcion"],
-                        fila["precio_centavos"], fila["stock"], fila["id"])
+        return producto_desde_fila(fila)
 
     def obtener_pedido(self, identificador: int) -> Pedido:
         fila = self._una_fila(
@@ -103,8 +103,7 @@ class TiendaRepositorio:
         )
         if fila is None:
             raise ValueError("No existe un pedido con ese identificador.")
-        cliente = Cliente(fila["nombre"], fila["correo"], fila["cliente_id"])
-        return Pedido(cliente, fila["estado"], fila["total_centavos"], fila["id"])
+        return pedido_desde_fila(fila)
 
     def resumen(self) -> tuple[list[dict], list[dict], list[dict]]:
         conexion = self._base_datos.conectar()

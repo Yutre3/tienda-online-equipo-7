@@ -16,9 +16,11 @@ línea del Equipo 7.
 TI3021_U2_EF01/
 ├── app.py                         # punto de entrada
 ├── auxiliares/                    # constantes reutilizables
+│   └── opciones_menu.py           # opciones del menú de la tienda
 ├── datos/
 │   ├── configuracion.py           # carga de .env y validación
 │   ├── conexion.py                # conexión y transacciones
+│   ├── models.py                  # conversión de registros a modelos POO
 │   ├── repositorios.py            # consultas SQL
 │   └── sql/001_esquema.sql        # base de datos versionada
 ├── negocio/

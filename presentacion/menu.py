@@ -3,6 +3,7 @@
 import mysql.connector
 
 from auxiliares.info_app import NOMBRE_APLICACION
+from auxiliares.opciones_menu import OPCIONES_MENU
 from datos.repositorios import TiendaRepositorio
 from negocio.entidades import Cliente, Producto
 from negocio.servicios import TiendaServicio
@@ -74,10 +75,9 @@ def menu_principal(servicio: TiendaServicio,
         "5": lambda: _mostrar_datos(repositorio),
     }
     while True:
-        print(f"\n{NOMBRE_APLICACION.upper()}\n{'=' * len(NOMBRE_APLICACION)}\n"
-              "[1] Registrar cliente\n[2] Registrar producto\n"
-              "[3] Crear pedido\n[4] Agregar producto a un pedido\n"
-              "[5] Mostrar datos\n[0] Salir")
+        print(f"\n{NOMBRE_APLICACION.upper()}\n{'=' * len(NOMBRE_APLICACION)}")
+        for clave, descripcion in OPCIONES_MENU.items():
+            print(f"[{clave}] {descripcion}")
         opcion = input("Ingrese una opción [0-5]: ").strip()
         if opcion == "0":
             print("Programa finalizado.")
