@@ -1,7 +1,6 @@
 # Tienda en línea - Equipo 7
 
-Proyecto modular de Programación Orientada a Objetos en Python. Está organizado
-siguiendo la estructura utilizada por el profesor, pero todo el contenido
+Proyecto modular de Programación Orientada a Objetos en Python. Todo el contenido
 corresponde al tema de la tienda en línea: clientes, productos, stock, pedidos y
 detalles de pedido.
 
@@ -42,7 +41,7 @@ TI3021_U2_EF01/
 - XAMPP con MySQL/MariaDB iniciado.
 - Git.
 
-## Abrir como el proyecto del profesor
+## Abrir el proyecto
 
 1. Abra Visual Studio Code.
 2. Seleccione **Archivo > Abrir carpeta**.
@@ -128,9 +127,3 @@ git push -u origin nombre-de-la-tarea
 ```
 
 No publique `.env`, `.venv`, contraseñas, archivos temporales ni bases locales.
-
-## Referencia
-
-La organización se adaptó desde
-[IEC_N2_C1_POO](https://github.com/baileytorch/IEC_N2_C1_POO), sin copiar su tema
-de biblioteca ni sus datos.
