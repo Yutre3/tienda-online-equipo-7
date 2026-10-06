@@ -127,3 +127,4 @@ git push -u origin nombre-de-la-tarea
 ```
 
 No publique `.env`, `.venv`, contraseñas, archivos temporales ni bases locales.
+
