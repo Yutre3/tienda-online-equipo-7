@@ -43,6 +43,25 @@ Visual Studio Code recomendará además las extensiones necesarias para Python y
 para consultar MySQL. No se usan rutas absolutas ni archivos propios de un solo
 computador.
 
+## Inicio rápido para los integrantes del equipo
+
+Cada integrante debe clonar el repositorio y abrir su carpeta en Visual Studio
+Code. Después debe iniciar MySQL en XAMPP y ejecutar, desde **Terminal > Ejecutar
+tarea**, la tarea **Preparar proyecto por primera vez**. Esta tarea crea el
+entorno de Python, instala las dependencias, crea el archivo `.env` local y
+construye la base `tienda_online` con sus tablas.
+
+Las tareas **3. Ejecutar tienda**, **Abrir base de datos en phpMyAdmin** y
+**Abrir repositorio en GitHub** dejan disponibles la aplicación, la base y el
+repositorio sin escribir rutas ni comandos. La base y `.env` son locales para
+cada integrante; Git comparte el código y el esquema SQL, pero nunca publica
+contraseñas ni datos privados.
+
+Para subir cambios, el propietario debe agregar previamente el nombre de
+usuario de GitHub de cada integrante en **Settings > Collaborators**. Después,
+cada integrante inicia sesión en GitHub desde Visual Studio Code y trabaja en
+una rama propia.
+
 ## Preparación después de clonar
 
 Clone y entre al repositorio:

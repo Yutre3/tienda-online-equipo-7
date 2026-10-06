@@ -1,0 +1,107 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Crear configuración local",
+      "type": "process",
+      "command": "python3",
+      "windows": { "command": "py" },
+      "args": [
+        "-c",
+        "from pathlib import Path; destino = Path('.env'); destino.exists() or destino.write_text(Path('.env.example').read_text(encoding='utf-8'), encoding='utf-8')"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Crear entorno Python",
+      "type": "process",
+      "command": "python3",
+      "windows": { "command": "py" },
+      "args": ["-m", "venv", ".venv"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Instalar dependencias",
+      "type": "process",
+      "command": ".venv/bin/python",
+      "windows": { "command": ".venv\\Scripts\\python.exe" },
+      "args": ["-m", "pip", "install", "-r", "requirements.txt"],
+      "problemMatcher": []
+    },
+    {
+      "label": "1. Preparar entorno",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Crear configuración local",
+        "Crear entorno Python",
+        "Instalar dependencias"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "2. Crear o actualizar base de datos",
+      "type": "process",
+      "command": ".venv/bin/python",
+      "windows": { "command": ".venv\\Scripts\\python.exe" },
+      "args": [
+        "-c",
+        "from datos.models import BaseDeDatos; base = BaseDeDatos(); base.inicializar(); print('Base de datos lista:', base.nombre)"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "3. Ejecutar tienda",
+      "type": "process",
+      "command": ".venv/bin/python",
+      "windows": { "command": ".venv\\Scripts\\python.exe" },
+      "args": ["app.py"],
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Abrir base de datos en phpMyAdmin",
+      "type": "process",
+      "command": "xdg-open",
+      "args": [
+        "http://localhost/phpmyadmin/index.php?route=/database/structure&db=tienda_online"
+      ],
+      "windows": {
+        "command": "cmd",
+        "args": [
+          "/c",
+          "start",
+          "",
+          "http://localhost/phpmyadmin/index.php?route=/database/structure&db=tienda_online"
+        ]
+      },
+      "osx": { "command": "open" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Abrir repositorio en GitHub",
+      "type": "process",
+      "command": "xdg-open",
+      "args": ["https://github.com/Yutre3/tienda-online-equipo-7"],
+      "windows": {
+        "command": "cmd",
+        "args": [
+          "/c",
+          "start",
+          "",
+          "https://github.com/Yutre3/tienda-online-equipo-7"
+        ]
+      },
+      "osx": { "command": "open" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Preparar proyecto por primera vez",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "1. Preparar entorno",
+        "2. Crear o actualizar base de datos"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}
