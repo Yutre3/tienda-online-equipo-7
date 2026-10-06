@@ -4,9 +4,8 @@ import mysql.connector
 
 from auxiliares.info_app import NOMBRE_APLICACION
 from auxiliares.opciones_menu import OPCIONES_MENU
-from datos.repositorios import TiendaRepositorio
-from negocio.entidades import Cliente, Producto
-from negocio.servicios import TiendaServicio
+from datos.models import Cliente, Producto, TiendaRepositorio
+from negocio import TiendaServicio
 
 
 def _entero(mensaje: str, minimo: int = 1) -> int:
