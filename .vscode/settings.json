@@ -1,0 +1,21 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv",
+  "python.testing.unittestEnabled": true,
+  "python.testing.pytestEnabled": false,
+  "python.testing.unittestArgs": ["-v", "-s", "./tests", "-p", "test_*.py"],
+  "sqltools.connections": [
+    {
+      "name": "Tienda Online (XAMPP)",
+      "driver": "MySQL",
+      "server": "127.0.0.1",
+      "port": 3306,
+      "database": "tienda_online",
+      "username": "root",
+      "password": "",
+      "previewLimit": 50,
+      "mysqlOptions": {
+        "authProtocol": "default"
+      }
+    }
+  ]
+}

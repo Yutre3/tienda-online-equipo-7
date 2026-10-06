@@ -1,0 +1,105 @@
+@startuml
+title Tienda en línea - Modelo de dominio
+
+abstract class Entidad {
+  - id: int
+  + id: int
+  ~ asignar_id(id: int): void
+}
+
+class Cliente {
+  - nombre: str
+  - correo: str
+  + nombre: str
+  + correo: str
+}
+
+class Producto {
+  - nombre: str
+  - descripcion: str
+  - precio_centavos: int
+  - stock: int
+  + nombre: str
+  + descripcion: str
+  + precio_centavos: int
+  + stock: int
+  + descontar_stock(cantidad: int): void
+}
+
+class Pedido {
+  - cliente: Cliente
+  - estado: str
+  - total_centavos: int
+  - detalles: list<DetallePedido>
+  + cliente: Cliente
+  + estado: str
+  + total_centavos: int
+  + detalles: tuple<DetallePedido>
+  + agregar_detalle(detalle: DetallePedido): void
+}
+
+class DetallePedido {
+  - producto: Producto
+  - cantidad: int
+  - precio_unitario_centavos: int
+  + producto: Producto
+  + cantidad: int
+  + precio_unitario_centavos: int
+  + subtotal_centavos: int
+}
+
+class ConfiguracionBD {
+  + host: str
+  + puerto: int
+  + nombre: str
+  + usuario: str
+  - contrasena: str
+}
+
+class BaseDeDatos {
+  - configuracion: ConfiguracionBD
+  + conectar(): Connection
+  + inicializar(): void
+  + probar_conexion(): bool
+}
+
+class TiendaRepositorio {
+  - base_datos: BaseDeDatos
+  + guardar_cliente(cliente: Cliente): void
+  + guardar_producto(producto: Producto): void
+  + guardar_pedido(pedido: Pedido): void
+  + guardar_detalle(pedido: Pedido, detalle: DetallePedido): void
+  + obtener_cliente(id: int): Cliente
+  + obtener_producto(id: int): Producto
+  + obtener_pedido(id: int): Pedido
+}
+
+class TiendaServicio {
+  - repositorio: TiendaRepositorio
+  + registrar_cliente(cliente: Cliente): Cliente
+  + registrar_producto(producto: Producto): Producto
+  + crear_pedido(cliente: Cliente): Pedido
+  + agregar_producto(pedido: Pedido, producto: Producto, cantidad: int): DetallePedido
+  + listar_productos(): list<Producto>
+}
+
+Entidad <|-- Cliente
+Entidad <|-- Producto
+Entidad <|-- Pedido
+Entidad <|-- DetallePedido
+Cliente "1" -- "0..*" Pedido : realiza
+Pedido "1" *-- "1..*" DetallePedido : contiene
+Producto "1" -- "0..*" DetallePedido : referencia
+BaseDeDatos --> ConfiguracionBD : utiliza
+TiendaRepositorio --> BaseDeDatos : persiste en
+TiendaServicio --> TiendaRepositorio : coordina
+TiendaServicio --> Cliente
+TiendaServicio --> Producto
+TiendaServicio --> Pedido
+
+note right of BaseDeDatos
+  Usa MySQL Connector/Python
+  con MariaDB de XAMPP
+  y scripts SQL versionados.
+end note
+@enduml

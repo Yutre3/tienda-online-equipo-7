@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.py[cod]
+.env
+tienda.db
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
