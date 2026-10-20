@@ -5,23 +5,39 @@
       "label": "Crear entorno virtual",
       "type": "process",
       "command": "python3",
-      "windows": { "command": "py" },
-      "args": ["-m", "venv", ".venv"],
+      "windows": {
+        "command": "py"
+      },
+      "args": [
+        "-m",
+        "venv",
+        ".venv"
+      ],
       "problemMatcher": []
     },
     {
       "label": "Instalar dependencias",
       "type": "process",
       "command": ".venv/bin/python",
-      "windows": { "command": ".venv\\Scripts\\python.exe" },
-      "args": ["-m", "pip", "install", "-r", "requirements.txt"],
+      "windows": {
+        "command": ".venv\\Scripts\\python.exe"
+      },
+      "args": [
+        "-m",
+        "pip",
+        "install",
+        "-r",
+        "requirements.txt"
+      ],
       "problemMatcher": []
     },
     {
       "label": "Crear configuración local",
       "type": "process",
       "command": "python3",
-      "windows": { "command": "py" },
+      "windows": {
+        "command": "py"
+      },
       "args": [
         "-c",
         "from pathlib import Path; p=Path('.env'); p.exists() or p.write_text(Path('.env.example').read_text(encoding='utf-8'), encoding='utf-8')"
@@ -42,8 +58,14 @@
       "label": "Ejecutar pruebas",
       "type": "process",
       "command": ".venv/bin/python",
-      "windows": { "command": ".venv\\Scripts\\python.exe" },
-      "args": ["-m", "pytest", "-q"],
+      "windows": {
+        "command": ".venv\\Scripts\\python.exe"
+      },
+      "args": [
+        "-m",
+        "pytest",
+        "-q"
+      ],
       "group": "test",
       "problemMatcher": []
     },
@@ -51,21 +73,49 @@
       "label": "Ejecutar tienda",
       "type": "process",
       "command": ".venv/bin/python",
-      "windows": { "command": ".venv\\Scripts\\python.exe" },
-      "args": ["app.py"],
-      "group": { "kind": "build", "isDefault": true },
+      "windows": {
+        "command": ".venv\\Scripts\\python.exe"
+      },
+      "args": [
+        "app.py"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
       "problemMatcher": []
     },
     {
       "label": "Abrir phpMyAdmin",
       "type": "process",
       "command": "xdg-open",
-      "args": ["http://localhost/phpmyadmin/index.php?route=/database/structure&db=tienda_online"],
+      "args": [
+        "http://localhost/phpmyadmin/index.php?route=/database/structure&db=tienda_online"
+      ],
       "windows": {
         "command": "cmd",
-        "args": ["/c", "start", "", "http://localhost/phpmyadmin/index.php?route=/database/structure&db=tienda_online"]
+        "args": [
+          "/c",
+          "start",
+          "",
+          "http://localhost/phpmyadmin/index.php?route=/database/structure&db=tienda_online"
+        ]
       },
-      "osx": { "command": "open" },
+      "osx": {
+        "command": "open"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Verificar conexión de base de datos",
+      "type": "process",
+      "command": ".venv/bin/python",
+      "windows": {
+        "command": ".venv\\Scripts\\python.exe"
+      },
+      "args": [
+        "verificar_base_datos.py"
+      ],
       "problemMatcher": []
     }
   ]
