@@ -293,7 +293,10 @@ class TiendaRepositorio:
                 cursor.execute(
                     "INSERT INTO detalles_pedido "
                     "(pedido_id, producto_id, cantidad, precio_unitario_centavos, subtotal_centavos) "
-                    "VALUES (%s, %s, %s, %s, %s)",
+                    "VALUES (%s, %s, %s, %s, %s) "
+                    "ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id), "
+                    "cantidad = cantidad + VALUES(cantidad), "
+                    "subtotal_centavos = subtotal_centavos + VALUES(subtotal_centavos)",
                     (pedido.id, detalle.producto.id, detalle.cantidad,
                      detalle.precio_unitario_centavos, detalle.subtotal_centavos),
                 )

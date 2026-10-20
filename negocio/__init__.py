@@ -23,7 +23,15 @@ class TiendaServicio:
     def agregar_producto(self, pedido: Pedido, producto: Producto,
                          cantidad: int) -> DetallePedido:
         detalle = DetallePedido(producto, cantidad)
-        self._repositorio.guardar_detalle(pedido, detalle)
+        stock_anterior = producto.stock
         producto.descontar_stock(cantidad)
-        pedido.agregar_detalle(detalle)
+        try:
+            pedido.agregar_detalle(detalle)
+            self._repositorio.guardar_detalle(pedido, detalle)
+        except Exception:
+            producto.stock = stock_anterior
+            if detalle in pedido.detalles:
+                pedido.detalles.remove(detalle)
+                pedido.total_centavos -= detalle.subtotal_centavos
+            raise
         return detalle
