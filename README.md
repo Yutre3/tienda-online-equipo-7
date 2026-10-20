@@ -2,7 +2,8 @@
 
 Proyecto modular de Programación Orientada a Objetos en Python. Todo el contenido
 corresponde al tema de la tienda en línea: clientes, productos, stock, pedidos y
-detalles de pedido (cambio por manuel en visual studio :V )
+detalles de pedido (cambio por manuel en visual studio :V ) asnjasbhasbas
+
 
 ## Estructura
 
