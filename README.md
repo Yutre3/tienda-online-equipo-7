@@ -1,6 +1,6 @@
 # Tienda en línea – Equipo 7
 
-**Integrantes:** Manuel Huichapan y Bastian Lara.
+**Integrantes:** Luis Huenchul, Manuel Huichapan y Bastian Lara.
 
 Aplicación de consola desarrollada en Python para administrar clientes, productos, inventario y pedidos. El proyecto adapta al tema de tienda en línea la separación modular del repositorio del profesor `baileytorch/IEI_N2_C2_POO` y demuestra programación orientada a objetos, ORM y conexión segura a MySQL/MariaDB.
 
@@ -33,7 +33,8 @@ TI3021_U2_EF01/
 │   └── servicios.py          Reglas y transacciones
 ├── presentacion/             Menús, entradas y tablas
 ├── tests/                    Pruebas automáticas
-├── docs/DIAGRAMA_UML.md      Modelo de clases y relaciones
+├── DIAGRAMA_UML.md           Diagrama UML en la raíz, según INACAP
+├── docs/DIAGRAMA_UML.md      Copia del modelo y las relaciones
 ├── .env.example              Plantilla sin secretos
 ├── requirements.txt         Dependencias fijadas
 └── .vscode/                  Ejecución, pruebas y SQLTools
@@ -145,7 +146,7 @@ También está disponible la tarea **Ejecutar pruebas**. La suite cubre validaci
 - **Reutilización:** repositorios y lectores comunes evitan repetir lógica.
 - **Polimorfismo:** todos los modelos Peewee comparten el comportamiento definido por `Model` y `ModeloBase`.
 
-El diagrama completo se encuentra en `docs/DIAGRAMA_UML.md` y puede visualizarse directamente en GitHub o con una extensión Mermaid de Visual Studio Code.
+El diagrama completo se encuentra en `DIAGRAMA_UML.md` (raíz) y `docs/DIAGRAMA_UML.md` y puede visualizarse directamente en GitHub o con una extensión Mermaid de Visual Studio Code.
 
 ## Reglas importantes
 
