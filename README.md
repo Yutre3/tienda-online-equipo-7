@@ -1,5 +1,7 @@
 # Tienda en línea – Equipo 7
 
+**Integrantes:** Manuel Huichapan y Bastian Lara.
+
 Aplicación de consola desarrollada en Python para administrar clientes, productos, inventario y pedidos. El proyecto adapta al tema de tienda en línea la separación modular del repositorio del profesor `baileytorch/IEI_N2_C2_POO` y demuestra programación orientada a objetos, ORM y conexión segura a MySQL/MariaDB.
 
 ## Funciones terminadas
@@ -10,7 +12,8 @@ Aplicación de consola desarrollada en Python para administrar clientes, product
 - Inventario transaccional: agregar descuenta stock; quitar, cancelar o eliminar devuelve las unidades correspondientes.
 - Validación de nombres, correos, SKU, precios, cantidades, estados e identificadores.
 - Tablas de consola con PrettyTable y mensajes comprensibles ante entradas incorrectas.
-- Persistencia mediante Peewee y PyMySQL en MySQL/MariaDB.
+- Persistencia portátil mediante Peewee y SQLite, lista para usar sin servidor.
+- Compatibilidad completa con MySQL/MariaDB mediante PyMySQL.
 - Suite automática aislada con SQLite temporal, sin alterar la base real.
 
 ## Arquitectura
@@ -42,7 +45,7 @@ La presentación no contiene consultas SQL. La capa de negocio no conoce detalle
 
 - Python 3.12 o superior.
 - Visual Studio Code con las extensiones recomendadas.
-- MySQL 8 o MariaDB 10.4 o superior; XAMPP es válido.
+- MySQL 8 o MariaDB 10.4 es opcional; XAMPP es válido.
 - Git para clonar y compartir el proyecto.
 
 ## Preparación automática en Visual Studio Code
@@ -50,9 +53,9 @@ La presentación no contiene consultas SQL. La capa de negocio no conoce detalle
 1. Abra la carpeta `TI3021_U2_EF01` mediante **Archivo > Abrir carpeta**.
 2. Abra **Terminal > Ejecutar tarea**.
 3. Seleccione **Preparar proyecto**.
-4. Edite `.env` y cambie `CAMBIAR_CLAVE_ANTES_DE_USAR` por una clave propia.
+4. Ejecute la tarea **Ejecutar tienda**. La base SQLite se crea automáticamente con datos de demostración.
 
-La tarea crea `.venv`, instala las dependencias y copia `.env.example` únicamente cuando `.env` todavía no existe. Las contraseñas locales nunca se publican porque `.env` está ignorado por Git.
+La tarea crea `.venv`, instala las dependencias y copia `.env.example` únicamente cuando `.env` todavía no existe. El modo predeterminado es SQLite y no necesita contraseña ni XAMPP. Las contraseñas locales nunca se publican porque `.env` está ignorado por Git.
 
 ## Preparación manual
 
@@ -74,7 +77,13 @@ python -m pip install -r requirements.txt
 cp .env.example .env
 ```
 
-## Crear la base y el usuario
+## Base portátil incluida
+
+La configuración predeterminada usa SQLite. Al ejecutar `app.py` se crea automáticamente `datos/tienda_online.db`, junto con todas las tablas y los mismos datos iniciales de demostración. Cada compañero obtiene su propia copia editable y persistente, sin depender de que el computador de otro integrante permanezca encendido.
+
+En Visual Studio Code se puede explorar mediante **SQLTools > Tienda Online (SQLite portátil)**. Esta modalidad evita el problema de compartir una dirección `localhost`, ya que `localhost` siempre apunta al computador de quien ejecuta el proyecto.
+
+## Usar MySQL/XAMPP de forma opcional
 
 Inicie MySQL desde XAMPP, MySQL Workbench o el servicio de su sistema. Entre como administrador y ejecute en este orden:
 
@@ -90,6 +99,7 @@ Si ya utilizaba una versión anterior que tenía productos pero no la columna `s
 Configuración local:
 
 ```dotenv
+DB_ENGINE=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_NAME=tienda_online
@@ -149,7 +159,7 @@ El diagrama completo se encuentra en `docs/DIAGRAMA_UML.md` y puede visualizarse
 
 ## Solución de problemas
 
-Si aparece **No fue posible conectar con la base de datos**, compruebe que MySQL está iniciado, que la base existe y que host, puerto, usuario y clave coinciden con `.env`.
+Si usa MySQL y aparece **No fue posible conectar con la base de datos**, compruebe que MySQL está iniciado, que la base existe, que `DB_ENGINE=mysql` y que host, puerto, usuario y clave coinciden con `.env`. Para volver al modo que funciona sin servidor, use `DB_ENGINE=sqlite`.
 
 Si PowerShell impide activar el entorno, puede ejecutar directamente:
 

@@ -2,15 +2,23 @@
 
 from peewee import Database, PeeweeException
 
-from datos.conexion import base_datos_proxy, configurar_base_datos, crear_tablas
+from datos.conexion import (
+    base_datos_proxy,
+    cargar_datos_demostracion,
+    configurar_base_datos,
+    crear_tablas,
+)
 from negocio import TiendaServicio
 from presentacion.menu import menu_principal
 
 
 def crear_servicio(base: Database | None = None) -> TiendaServicio:
+    usar_datos_demostracion = base is None
     base_configurada = configurar_base_datos(base)
     base_configurada.connect(reuse_if_open=True)
     crear_tablas()
+    if usar_datos_demostracion:
+        cargar_datos_demostracion()
     return TiendaServicio()
 
 
