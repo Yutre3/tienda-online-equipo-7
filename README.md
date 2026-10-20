@@ -78,6 +78,10 @@ python -m pip install -r requirements.txt
 cp .env.example .env
 ```
 
+## Verificar la conexión desde Visual Studio Code
+
+Seleccione **Terminal > Ejecutar tarea > Verificar conexión de base de datos**. Esta comprobación utiliza el motor indicado en `.env`, consulta las cuatro tablas (`clientes`, `productos`, `pedidos` y `detalles_pedido`) y muestra su cantidad de registros sin cambiarlos. Para comprobar la base de phpMyAdmin debe configurar `DB_ENGINE=mysql` y las credenciales reales en el `.env` local (no en GitHub); MySQL/XAMPP debe estar iniciado. Para la base SQLite portátil use `DB_ENGINE=sqlite` y ejecute primero **Ejecutar tienda** para crear las tablas si aún no existen.
+
 ## Base portátil incluida
 
 La configuración predeterminada usa SQLite. Al ejecutar `app.py` se crea automáticamente `datos/tienda_online.db`, junto con todas las tablas y los mismos datos iniciales de demostración. Cada compañero obtiene su propia copia editable y persistente, sin depender de que el computador de otro integrante permanezca encendido.
