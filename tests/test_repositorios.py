@@ -1,3 +1,6 @@
+import subprocess
+import sys
+
 import pytest
 
 from datos.repositorios import (
@@ -6,6 +9,17 @@ from datos.repositorios import (
     RepositorioProductos,
 )
 from negocio.entidades import Cliente, DetallePedido, ErrorDominio, Pedido, Producto
+
+
+def test_repositorios_se_pueden_importar_antes_que_negocio() -> None:
+    resultado = subprocess.run(
+        [sys.executable, "-c", "import datos.repositorios"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert resultado.returncode == 0, resultado.stderr
 
 
 def test_crud_de_clientes_y_correo_unico(base_pruebas) -> None:

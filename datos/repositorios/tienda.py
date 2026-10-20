@@ -131,6 +131,21 @@ class RepositorioProductos:
         if filas != 1:
             raise ErrorDominio("No existe el producto solicitado.")
 
+    def descontar_stock(self, identificador: int, cantidad: int) -> None:
+        filas = (ProductoModelo.update(stock=ProductoModelo.stock - cantidad)
+                 .where(
+                     (ProductoModelo.id == identificador)
+                     & (ProductoModelo.stock >= cantidad)
+                 ).execute())
+        if filas != 1:
+            raise ErrorDominio("No existe stock suficiente para el producto.")
+
+    def reponer_stock(self, identificador: int, cantidad: int) -> None:
+        filas = (ProductoModelo.update(stock=ProductoModelo.stock + cantidad)
+                 .where(ProductoModelo.id == identificador).execute())
+        if filas != 1:
+            raise ErrorDominio("No existe el producto solicitado.")
+
 
 class RepositorioPedidos:
     def crear(self, pedido: Pedido) -> Pedido:
