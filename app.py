@@ -20,6 +20,13 @@ def main() -> int:
         print("Conexión exitosa. Base de datos preparada.")
         menu_principal(servicio)
         return 0
+    except ValueError as error:
+        print(
+            "La configuración de la base de datos no es válida. "
+            "Revise DB_PORT y los demás valores de .env.\n"
+            f"Detalle técnico: {error}"
+        )
+        return 1
     except PeeweeException as error:
         print(
             "No fue posible conectar con la base de datos. "

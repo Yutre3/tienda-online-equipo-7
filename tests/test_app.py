@@ -29,3 +29,14 @@ def test_main_informa_error_de_conexion(monkeypatch, capsys) -> None:
     assert resultado == 1
     assert "No fue posible conectar" in salida
     assert "servidor no disponible" in salida
+
+
+def test_main_informa_puerto_invalido_sin_traza(monkeypatch, capsys) -> None:
+    monkeypatch.setenv("DB_PORT", "puerto-invalido")
+
+    resultado = app.main()
+
+    salida = capsys.readouterr().out
+    assert resultado == 1
+    assert "configuración" in salida.lower()
+    assert "DB_PORT" in salida

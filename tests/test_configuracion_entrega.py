@@ -68,6 +68,12 @@ def test_scripts_sql_cubren_esquema_usuario_y_datos() -> None:
 
 
 def test_archivos_locales_y_secretos_estan_ignorados() -> None:
+    if not (RAIZ / ".git").exists():
+        assert not any(
+            (RAIZ / ruta).exists()
+            for ruta in (".env", ".venv", "tienda.db", "entrega.zip")
+        )
+        return
     resultado = subprocess.run(
         ["git", "check-ignore", ".env", ".venv/prueba", "tienda.db", "entrega.zip"],
         cwd=RAIZ,

@@ -1,5 +1,8 @@
 import pytest
+from concurrent.futures import ThreadPoolExecutor
+from peewee import SqliteDatabase
 
+from datos.conexion import configurar_base_datos, crear_tablas
 from negocio import Cliente, ErrorDominio, EstadoPedido, Producto, TiendaServicio
 
 
@@ -121,3 +124,33 @@ def test_eliminar_pedido_cancelado_no_duplica_stock(base_pruebas) -> None:
     servicio.eliminar_pedido(pedido.id)
 
     assert servicio.obtener_producto(producto.id).stock == 5
+
+
+def test_cancelaciones_concurrentes_devuelven_stock_una_vez(tmp_path) -> None:
+    base = SqliteDatabase(
+        tmp_path / "concurrencia.db",
+        pragmas={"foreign_keys": 1, "journal_mode": "wal"},
+        check_same_thread=False,
+        timeout=5,
+    )
+    configurar_base_datos(base)
+    base.connect()
+    crear_tablas()
+    servicio, cliente, producto = preparar_tienda()
+    pedido = servicio.crear_pedido(cliente.id)
+    servicio.agregar_producto(pedido.id, producto.id, 3)
+    base.close()
+
+    def cancelar() -> str:
+        try:
+            TiendaServicio().cancelar_pedido(pedido.id)
+            return "cancelado"
+        except ErrorDominio:
+            return "rechazado"
+
+    with ThreadPoolExecutor(max_workers=2) as ejecutor:
+        resultados = list(ejecutor.map(lambda _: cancelar(), range(2)))
+
+    assert sorted(resultados) == ["cancelado", "rechazado"]
+    assert TiendaServicio().obtener_producto(producto.id).stock == 5
+    base.close()

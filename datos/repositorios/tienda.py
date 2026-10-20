@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from peewee import IntegrityError
+from peewee import IntegrityError, MySQLDatabase
 
 from datos.modelos import (
     ClienteModelo,
@@ -159,16 +159,34 @@ class RepositorioPedidos:
         return pedido
 
     def obtener(self, identificador: int) -> Pedido:
-        modelo = (PedidoModelo.select(PedidoModelo, ClienteModelo)
-                  .join(ClienteModelo)
-                  .where(PedidoModelo.id == identificador).get_or_none())
+        modelo = self._consulta_pedido(identificador).get_or_none()
         if modelo is None:
             raise ErrorDominio("No existe el pedido solicitado.")
+        return self._pedido_entidad(modelo)
+
+    def obtener_para_actualizar(self, identificador: int) -> Pedido:
+        consulta = self._consulta_pedido(identificador)
+        from datos.conexion import base_datos_proxy
+
+        if isinstance(base_datos_proxy.obj, MySQLDatabase):
+            consulta = consulta.for_update()
+        modelo = consulta.get_or_none()
+        if modelo is None:
+            raise ErrorDominio("No existe el pedido solicitado.")
+        return self._pedido_entidad(modelo)
+
+    @staticmethod
+    def _consulta_pedido(identificador: int):
+        return (PedidoModelo.select(PedidoModelo, ClienteModelo)
+                .join(ClienteModelo)
+                .where(PedidoModelo.id == identificador))
+
+    def _pedido_entidad(self, modelo: PedidoModelo) -> Pedido:
         cliente = _cliente_entidad(modelo.cliente)
         detalles = [self._detalle_entidad(detalle) for detalle in (
             DetallePedidoModelo.select(DetallePedidoModelo, ProductoModelo)
             .join(ProductoModelo)
-            .where(DetallePedidoModelo.pedido == identificador)
+            .where(DetallePedidoModelo.pedido == modelo.id)
             .order_by(DetallePedidoModelo.id)
         )]
         return Pedido(cliente, modelo.estado, detalles, modelo.id, modelo.creado_en)

@@ -1,6 +1,6 @@
 """Casos de uso y transacciones de la tienda en línea."""
 
-from datos.conexion import base_datos_proxy
+from datos.conexion import transaccion_escritura
 from datos.repositorios import (
     RepositorioClientes,
     RepositorioPedidos,
@@ -78,8 +78,8 @@ class TiendaServicio:
     def agregar_producto(
         self, pedido_id: int, producto_id: int, cantidad: int
     ) -> Pedido:
-        with base_datos_proxy.atomic():
-            pedido = self._pedidos.obtener(pedido_id)
+        with transaccion_escritura():
+            pedido = self._pedidos.obtener_para_actualizar(pedido_id)
             if pedido.estado is not EstadoPedido.CREADO:
                 raise ErrorDominio(
                     "Solo se pueden modificar pedidos en estado CREADO."
@@ -91,8 +91,8 @@ class TiendaServicio:
         return self._pedidos.obtener(pedido_id)
 
     def quitar_producto(self, pedido_id: int, producto_id: int) -> Pedido:
-        with base_datos_proxy.atomic():
-            pedido = self._pedidos.obtener(pedido_id)
+        with transaccion_escritura():
+            pedido = self._pedidos.obtener_para_actualizar(pedido_id)
             if pedido.estado is not EstadoPedido.CREADO:
                 raise ErrorDominio(
                     "Solo se pueden modificar pedidos en estado CREADO."
@@ -102,23 +102,23 @@ class TiendaServicio:
         return self._pedidos.obtener(pedido_id)
 
     def confirmar_pedido(self, pedido_id: int) -> Pedido:
-        with base_datos_proxy.atomic():
-            pedido = self._pedidos.obtener(pedido_id)
+        with transaccion_escritura():
+            pedido = self._pedidos.obtener_para_actualizar(pedido_id)
             pedido.cambiar_estado(EstadoPedido.CONFIRMADO)
             self._pedidos.cambiar_estado(pedido_id, pedido.estado)
         return self._pedidos.obtener(pedido_id)
 
     def cancelar_pedido(self, pedido_id: int) -> Pedido:
-        with base_datos_proxy.atomic():
-            pedido = self._pedidos.obtener(pedido_id)
+        with transaccion_escritura():
+            pedido = self._pedidos.obtener_para_actualizar(pedido_id)
             pedido.cambiar_estado(EstadoPedido.CANCELADO)
             self._reponer_detalles(pedido)
             self._pedidos.cambiar_estado(pedido_id, pedido.estado)
         return self._pedidos.obtener(pedido_id)
 
     def eliminar_pedido(self, pedido_id: int) -> None:
-        with base_datos_proxy.atomic():
-            pedido = self._pedidos.obtener(pedido_id)
+        with transaccion_escritura():
+            pedido = self._pedidos.obtener_para_actualizar(pedido_id)
             if pedido.estado is not EstadoPedido.CANCELADO:
                 self._reponer_detalles(pedido)
             self._pedidos.eliminar(pedido_id)

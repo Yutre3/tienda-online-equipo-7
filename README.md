@@ -85,6 +85,8 @@ Inicie MySQL desde XAMPP, MySQL Workbench o el servicio de su sistema. Entre com
 
 La aplicación usa `tienda_app`, una cuenta limitada a la base `tienda_online`. No se utiliza `root` desde Python. Peewee crea las tablas ausentes al iniciar, pero la base y el usuario deben existir previamente.
 
+Si ya utilizaba una versión anterior que tenía productos pero no la columna `sku`, haga primero un respaldo. Al iniciar esta versión, la aplicación asigna códigos `LEGACY-000001`, `LEGACY-000002`, etc. y conserva los registros. También puede ejecutar manualmente `datos/sql/2026.10.20_20.00_MIGRATE_SKU.sql` antes del script de usuario.
+
 Configuración local:
 
 ```dotenv

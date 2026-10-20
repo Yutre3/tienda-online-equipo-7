@@ -2,7 +2,9 @@ import subprocess
 import sys
 
 import pytest
+from peewee import SqliteDatabase
 
+from datos.conexion import configurar_base_datos, crear_tablas
 from datos.repositorios import (
     RepositorioClientes,
     RepositorioPedidos,
@@ -20,6 +22,40 @@ def test_repositorios_se_pueden_importar_antes_que_negocio() -> None:
     )
 
     assert resultado.returncode == 0, resultado.stderr
+
+
+def test_crear_tablas_migra_productos_anteriores_sin_sku() -> None:
+    base = SqliteDatabase(":memory:", pragmas={"foreign_keys": 1})
+    configurar_base_datos(base)
+    base.connect()
+    base.execute_sql(
+        """
+        CREATE TABLE productos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre VARCHAR(150) NOT NULL,
+            descripcion TEXT NOT NULL,
+            precio_centavos INTEGER NOT NULL,
+            stock INTEGER NOT NULL,
+            creado_en DATETIME NOT NULL,
+            actualizado_en DATETIME NOT NULL
+        )
+        """
+    )
+    base.execute_sql(
+        """
+        INSERT INTO productos
+            (nombre, descripcion, precio_centavos, stock, creado_en, actualizado_en)
+        VALUES ('Producto anterior', '', 150000, 7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        """
+    )
+
+    crear_tablas()
+
+    producto = RepositorioProductos().obtener(1)
+    assert producto.sku == "LEGACY-000001"
+    assert producto.nombre == "Producto anterior"
+    assert producto.stock == 7
+    base.close()
 
 
 def test_crud_de_clientes_y_correo_unico(base_pruebas) -> None:
