@@ -1,85 +1,62 @@
-# Tienda en línea - Equipo 7
+# Tienda en línea – Equipo 7
 
-Proyecto modular de Programación Orientada a Objetos en Python. El sistema
-administra clientes, productos, existencias, pedidos y detalles de pedido de una
-tienda en línea.
+Aplicación de consola desarrollada en Python para administrar clientes, productos, inventario y pedidos. El proyecto adapta al tema de tienda en línea la separación modular del repositorio del profesor `baileytorch/IEI_N2_C2_POO` y demuestra programación orientada a objetos, ORM y conexión segura a MySQL/MariaDB.
 
-La organización sigue la forma de trabajo del profesor en
-[IEC_N2_C1_POO](https://github.com/baileytorch/IEC_N2_C1_POO): presentación,
-negocio, datos, archivos auxiliares y SQL separados. El contenido y las reglas
-corresponden únicamente al tema del Equipo 7.
+## Funciones terminadas
 
-## Estructura
+- Clientes: registrar, listar, editar y eliminar.
+- Productos: registrar, listar, editar y eliminar con SKU único, precio y stock.
+- Pedidos: crear, consultar detalle, agregar o quitar productos, confirmar, cancelar y eliminar.
+- Inventario transaccional: agregar descuenta stock; quitar, cancelar o eliminar devuelve las unidades correspondientes.
+- Validación de nombres, correos, SKU, precios, cantidades, estados e identificadores.
+- Tablas de consola con PrettyTable y mensajes comprensibles ante entradas incorrectas.
+- Persistencia mediante Peewee y PyMySQL en MySQL/MariaDB.
+- Suite automática aislada con SQLite temporal, sin alterar la base real.
+
+## Arquitectura
 
 ```text
 TI3021_U2_EF01/
-├── .vscode/                 Configuración compartida de Visual Studio Code
-├── auxiliares/              Nombre y opciones del menú
+├── app.py                    Punto de entrada y conexión
+├── auxiliares/               Nombre y opciones compartidas
 ├── datos/
-│   ├── sql/                 Esquema permanente y versionado de MariaDB
-│   └── models.py            Clases, conexión y persistencia
-├── negocio/                 Reglas y servicios de la tienda
-├── presentacion/            Menú de consola
-├── .env.example             Plantilla de conexión sin datos personales
-├── .gitignore               Archivos que Git no debe publicar
-├── app.py                   Punto de entrada
-├── requirements.txt         Dependencias de Python
-└── README.md
+│   ├── conexion.py           Inicialización de Peewee
+│   ├── configuracion.py      Lectura segura de .env
+│   ├── modelos/              Clases ORM
+│   ├── repositorios/         CRUD y consultas
+│   └── sql/                  Esquema, usuario y datos de ejemplo
+├── negocio/
+│   ├── entidades.py          Clases POO y validaciones
+│   └── servicios.py          Reglas y transacciones
+├── presentacion/             Menús, entradas y tablas
+├── tests/                    Pruebas automáticas
+├── docs/DIAGRAMA_UML.md      Modelo de clases y relaciones
+├── .env.example              Plantilla sin secretos
+├── requirements.txt         Dependencias fijadas
+└── .vscode/                  Ejecución, pruebas y SQLTools
 ```
 
-La base permanente se llama `tienda_online` y contiene estas tablas:
-`clientes`, `productos`, `pedidos` y `detalles_pedido`. Sus relaciones, índices
-y restricciones están en
-`datos/sql/2026.10.05_20.00_DDL_Tienda_Online.sql`.
+La presentación no contiene consultas SQL. La capa de negocio no conoce detalles de la consola. Los repositorios convierten entre objetos del dominio y modelos Peewee, lo que mantiene alta cohesión y bajo acoplamiento.
 
-## Programas necesarios
+## Requisitos
 
-- Python 3.10 o superior.
-- Visual Studio Code con la extensión oficial de Python.
-- XAMPP con MySQL/MariaDB iniciado.
-- Git.
+- Python 3.12 o superior.
+- Visual Studio Code con las extensiones recomendadas.
+- MySQL 8 o MariaDB 10.4 o superior; XAMPP es válido.
+- Git para clonar y compartir el proyecto.
 
-Visual Studio Code recomendará además las extensiones necesarias para Python y
-para consultar MySQL. No se usan rutas absolutas ni archivos propios de un solo
-computador.
+## Preparación automática en Visual Studio Code
 
-## Inicio rápido para los integrantes del equipo
+1. Abra la carpeta `TI3021_U2_EF01` mediante **Archivo > Abrir carpeta**.
+2. Abra **Terminal > Ejecutar tarea**.
+3. Seleccione **Preparar proyecto**.
+4. Edite `.env` y cambie `CAMBIAR_CLAVE_ANTES_DE_USAR` por una clave propia.
 
-Cada integrante debe clonar el repositorio y abrir su carpeta en Visual Studio
-Code. Después debe iniciar MySQL en XAMPP y ejecutar, desde **Terminal > Ejecutar
-tarea**, la tarea **Preparar proyecto por primera vez**. Esta tarea crea el
-entorno de Python, instala las dependencias, crea el archivo `.env` local y
-construye la base `tienda_online` con sus tablas.
+La tarea crea `.venv`, instala las dependencias y copia `.env.example` únicamente cuando `.env` todavía no existe. Las contraseñas locales nunca se publican porque `.env` está ignorado por Git.
 
-Las tareas **3. Ejecutar tienda**, **Abrir base de datos en phpMyAdmin** y
-**Abrir repositorio en GitHub** dejan disponibles la aplicación, la base y el
-repositorio sin escribir rutas ni comandos. La base y `.env` son locales para
-cada integrante; Git comparte el código y el esquema SQL, pero nunca publica
-contraseñas ni datos privados.
+## Preparación manual
 
-Para subir cambios, el propietario debe agregar previamente el nombre de
-usuario de GitHub de cada integrante en **Settings > Collaborators**. Después,
-cada integrante inicia sesión en GitHub desde Visual Studio Code y trabaja en
-una rama propia.
-
-## Preparación después de clonar
-
-Clone y entre al repositorio:
-
-```bash
-git clone https://github.com/Yutre3/tienda-online-equipo-7.git
-cd tienda-online-equipo-7
-```
-
-Abra esa carpeta en Visual Studio Code mediante **Archivo > Abrir carpeta**. El
-explorador quedará ordenado como en la referencia del profesor. También puede
-abrirla desde una terminal con:
-
-```bash
-code .
-```
-
-En Windows PowerShell, cree el entorno e instale las dependencias:
+En Windows PowerShell:
 
 ```powershell
 py -m venv .venv
@@ -97,58 +74,93 @@ python -m pip install -r requirements.txt
 cp .env.example .env
 ```
 
-## Configuración de la base permanente
+## Crear la base y el usuario
 
-1. Abra XAMPP e inicie **MySQL**.
-2. Revise el archivo `.env` creado desde la plantilla.
-3. Ejecute `python app.py` desde la raíz del proyecto.
+Inicie MySQL desde XAMPP, MySQL Workbench o el servicio de su sistema. Entre como administrador y ejecute en este orden:
 
-La configuración predeterminada de XAMPP es:
+1. `datos/sql/2026.10.05_20.00_DDL_Tienda_Online.sql`
+2. Cambie la clave de ejemplo en `datos/sql/2026.10.20_20.10_CREATE_USER.sql` y ejecútelo.
+3. Escriba exactamente la misma clave en `DB_PASSWORD` dentro de `.env`.
+4. Opcionalmente ejecute `datos/sql/2026.10.20_20.20_DATOS_EJEMPLO.sql`.
+
+La aplicación usa `tienda_app`, una cuenta limitada a la base `tienda_online`. No se utiliza `root` desde Python. Peewee crea las tablas ausentes al iniciar, pero la base y el usuario deben existir previamente.
+
+Configuración local:
 
 ```dotenv
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_NAME=tienda_online
-DB_USER=root
-DB_PASSWORD=
+DB_USER=tienda_app
+DB_PASSWORD=SU_CLAVE_LOCAL
 ```
 
-Si el computador usa otro puerto, usuario o contraseña, cambie solamente el
-valor correspondiente en `.env`. Este archivo es local y Git no lo publica.
-La conexión opcional **Tienda Online (XAMPP)** de SQLTools usa los valores
-predeterminados; si necesita otras credenciales, configúrelas localmente desde
-la extensión y no guarde la contraseña en Git.
+## Ejecutar
 
-Al iniciar, la aplicación se conecta a MariaDB, crea permanentemente la base
-`tienda_online` si todavía no existe, aplica el esquema SQL y muestra el mensaje
-`Conexión exitosa`. El mismo esquema también se puede importar manualmente desde
-phpMyAdmin. No se debe publicar la carpeta interna de datos de XAMPP: el archivo
-SQL versionado es el respaldo reproducible que permite construir la misma base
-en cualquier computador.
-
-## Ejecutar y modificar
-
-Con el entorno activado y MySQL iniciado:
+Desde una terminal con el entorno activado:
 
 ```bash
 python app.py
 ```
 
-El menú permite registrar clientes y productos, crear pedidos, agregar productos
-a un pedido y consultar lo almacenado. Los cambios se realizan según la capa:
+También puede seleccionar **Ejecutar tienda** en las tareas de Visual Studio Code o la configuración **Ejecutar tienda en línea** en **Ejecutar y depurar**. Al conectarse se muestra `Conexión exitosa. Base de datos preparada.` y aparece el menú principal.
 
-- interfaz y mensajes: `presentacion/` y `auxiliares/`;
-- reglas de la tienda: `negocio/`;
-- clases, consultas o conexión: `datos/models.py`;
-- cambios de tablas: un archivo SQL dentro de `datos/sql/`.
+El orden recomendado para una demostración es:
 
-Visual Studio Code incluye la configuración **Ejecutar tienda en línea** en la
-sección **Ejecutar y depurar**. El archivo `.vscode/settings.json` usa siempre el
-entorno `.venv` situado dentro del proyecto.
+1. Registrar un cliente.
+2. Registrar dos productos con stock.
+3. Crear un pedido para el cliente.
+4. Agregar productos y comprobar el total.
+5. Confirmar el pedido.
+6. Mostrar el resumen general.
 
-## Trabajo grupal con Git y GitHub
+## Ejecutar pruebas
 
-Antes de comenzar una tarea:
+Las pruebas utilizan SQLite en memoria únicamente como sustituto controlado de la base. No necesitan XAMPP ni modifican datos reales.
+
+```bash
+python -m pytest -q
+```
+
+También está disponible la tarea **Ejecutar pruebas**. La suite cubre validaciones, CRUD, claves únicas, relaciones, cálculo de totales, control de stock, transacciones, estados, cancelación, importaciones, presentación y configuración de entrega.
+
+## Principios POO demostrados
+
+- **Encapsulamiento:** nombre, correo, SKU, precio y stock se modifican mediante propiedades validadas.
+- **Herencia:** las cuatro entidades heredan identificación común desde `Entidad`; los modelos ORM heredan de `ModeloBase`.
+- **Abstracción:** el menú usa `TiendaServicio` sin construir consultas.
+- **Asociación y composición:** un cliente realiza pedidos y un pedido compone sus detalles.
+- **Reutilización:** repositorios y lectores comunes evitan repetir lógica.
+- **Polimorfismo:** todos los modelos Peewee comparten el comportamiento definido por `Model` y `ModeloBase`.
+
+El diagrama completo se encuentra en `docs/DIAGRAMA_UML.md` y puede visualizarse directamente en GitHub o con una extensión Mermaid de Visual Studio Code.
+
+## Reglas importantes
+
+- El correo del cliente y el SKU del producto deben ser únicos.
+- Los precios se guardan como centavos enteros para evitar errores de punto flotante.
+- Solo un pedido `CREADO` admite agregar o quitar productos.
+- Un pedido vacío no se puede confirmar.
+- Un pedido cancelado no puede cambiar nuevamente de estado.
+- No se elimina un cliente con pedidos ni un producto referenciado por pedidos conservados.
+- Las operaciones de inventario y pedido se ejecutan dentro de una transacción.
+
+## Solución de problemas
+
+Si aparece **No fue posible conectar con la base de datos**, compruebe que MySQL está iniciado, que la base existe y que host, puerto, usuario y clave coinciden con `.env`.
+
+Si PowerShell impide activar el entorno, puede ejecutar directamente:
+
+```powershell
+.venv\Scripts\python.exe -m pytest -q
+.venv\Scripts\python.exe app.py
+```
+
+Si un puerto de XAMPP es distinto de 3306, cambie `DB_PORT` en `.env` y el campo `port` de la conexión SQLTools local. No suba esa configuración si incluye credenciales personales.
+
+## Trabajo grupal con Git
+
+Cada integrante debe trabajar en una rama propia:
 
 ```bash
 git switch main
@@ -156,16 +168,8 @@ git pull origin main
 git switch -c nombre-de-la-tarea
 ```
 
-Para guardar y compartir cambios:
+Antes de compartir cambios, ejecute las pruebas y revise que no se incluyan `.env`, `.venv`, archivos ZIP, cachés ni bases locales. Luego cree un commit y una solicitud de incorporación para que otro integrante revise el cambio.
 
-```bash
-git status
-git add archivo_modificado.py
-git commit -m "Descripción clara del cambio"
-git push -u origin nombre-de-la-tarea
-```
+## Entrega
 
-Después se crea una solicitud de incorporación en GitHub para revisar el cambio
-antes de unirlo a `main`. Cada compañero debe conservar su propio `.env` y su
-propia `.venv`; ambos están excluidos por `.gitignore`. Nunca se deben subir
-contraseñas, archivos temporales ni la carpeta de datos interna de XAMPP.
+El ZIP o repositorio debe incluir código, pruebas, SQL, documentación y configuración de Visual Studio Code. No debe incluir el entorno virtual, contraseñas ni datos internos de XAMPP. Según la guía de la asignatura, la entrega oficial se carga en AAI; el correo puede utilizarse solo como respaldo o para compartir el trabajo con el equipo.
