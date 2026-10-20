@@ -14,14 +14,21 @@ base_datos_proxy = DatabaseProxy()
 def configurar_base_datos(base: Database | None = None) -> Database:
     if base is None:
         datos = ConfiguracionBaseDatos.desde_entorno()
-        base = MySQLDatabase(
-            datos.nombre,
-            host=datos.servidor,
-            port=datos.puerto,
-            user=datos.usuario,
-            password=datos.contrasena,
-            charset="utf8mb4",
-        )
+        if datos.motor == "sqlite":
+            ruta = datos.ruta_sqlite_absoluta()
+            ruta.parent.mkdir(parents=True, exist_ok=True)
+            base = SqliteDatabase(ruta, pragmas={"foreign_keys": 1})
+        elif datos.motor == "mysql":
+            base = MySQLDatabase(
+                datos.nombre,
+                host=datos.servidor,
+                port=datos.puerto,
+                user=datos.usuario,
+                password=datos.contrasena,
+                charset="utf8mb4",
+            )
+        else:
+            raise ValueError("DB_ENGINE debe ser 'sqlite' o 'mysql'.")
     base_datos_proxy.initialize(base)
     return base
 
@@ -40,6 +47,31 @@ def tablas() -> tuple[type, ...]:
 def crear_tablas() -> None:
     migrar_esquema()
     base_datos_proxy.create_tables(tablas(), safe=True)
+
+
+def cargar_datos_demostracion() -> None:
+    """Carga el mismo conjunto inicial en una base nueva, sin duplicarlo."""
+    from datos.modelos.models import ClienteModelo, ProductoModelo
+
+    ClienteModelo.get_or_create(
+        correo="cliente@ejemplo.cl",
+        defaults={"nombre": "Cliente de demostración"},
+    )
+    productos = (
+        ("TEC-001", "Teclado mecánico", "Teclado USB con iluminación", 3999000, 10),
+        ("MOU-001", "Mouse óptico", "Mouse USB de cinco botones", 1299000, 20),
+        ("AUD-001", "Audífonos", "Audífonos con micrófono", 2499000, 15),
+    )
+    for sku, nombre, descripcion, precio_centavos, stock in productos:
+        ProductoModelo.get_or_create(
+            sku=sku,
+            defaults={
+                "nombre": nombre,
+                "descripcion": descripcion,
+                "precio_centavos": precio_centavos,
+                "stock": stock,
+            },
+        )
 
 
 def migrar_esquema() -> None:

@@ -12,6 +12,12 @@
   },
   "sqltools.connections": [
     {
+      "name": "Tienda Online (SQLite portátil)",
+      "driver": "SQLite",
+      "database": "${workspaceFolder}/datos/tienda_online.db",
+      "previewLimit": 50
+    },
+    {
       "name": "Tienda Online (MySQL/XAMPP)",
       "driver": "MySQL",
       "server": "127.0.0.1",

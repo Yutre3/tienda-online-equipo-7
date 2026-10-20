@@ -35,6 +35,8 @@ def test_dependencias_declaran_stack_del_profesor_y_pruebas() -> None:
 def test_configuracion_de_ejemplo_usa_usuario_limitado() -> None:
     valores = _leer_env_ejemplo()
 
+    assert valores["DB_ENGINE"] == "sqlite"
+    assert valores["SQLITE_PATH"] == "datos/tienda_online.db"
     assert valores["DB_NAME"] == "tienda_online"
     assert valores["DB_USER"] == "tienda_app"
     assert valores["DB_USER"].lower() != "root"
@@ -48,9 +50,14 @@ def test_configuracion_vscode_es_json_valido_y_ofrece_tareas_clave() -> None:
 
     etiquetas = {tarea["label"] for tarea in tareas["tasks"]}
     assert {"Preparar proyecto", "Ejecutar pruebas", "Ejecutar tienda"} <= etiquetas
-    assert ajustes["sqltools.connections"][0]["username"] == "tienda_app"
+    conexiones = {
+        conexion["name"]: conexion for conexion in ajustes["sqltools.connections"]
+    }
+    assert conexiones["Tienda Online (MySQL/XAMPP)"]["username"] == "tienda_app"
+    assert conexiones["Tienda Online (SQLite portátil)"]["driver"] == "SQLite"
     assert "ms-python.python" in extensiones["recommendations"]
     assert "mtxr.sqltools-driver-mysql" in extensiones["recommendations"]
+    assert "mtxr.sqltools-driver-sqlite" in extensiones["recommendations"]
 
 
 def test_scripts_sql_cubren_esquema_usuario_y_datos() -> None:
