@@ -1,0 +1,5 @@
+peewee==4.5.3
+PyMySQL==1.2.3
+python-decouple==3.8
+prettytable==3.18.0
+pytest==9.1.1

@@ -1,25 +1,46 @@
 """Punto de entrada de la aplicación de tienda en línea."""
 
-import mysql.connector
+from peewee import Database, PeeweeException
 
-from datos.models import BaseDeDatos, TiendaRepositorio
+from datos.conexion import base_datos_proxy, configurar_base_datos, crear_tablas
 from negocio import TiendaServicio
 from presentacion.menu import menu_principal
 
 
-def main() -> None:
+def crear_servicio(base: Database | None = None) -> TiendaServicio:
+    base_configurada = configurar_base_datos(base)
+    base_configurada.connect(reuse_if_open=True)
+    crear_tablas()
+    return TiendaServicio()
+
+
+def main() -> int:
     try:
-        base_datos = BaseDeDatos()
-        base_datos.inicializar()
-        repositorio = TiendaRepositorio(base_datos)
-        menu_principal(TiendaServicio(repositorio), repositorio)
-    except (mysql.connector.Error, FileNotFoundError, ValueError) as error:
+        servicio = crear_servicio()
+        print("Conexión exitosa. Base de datos preparada.")
+        menu_principal(servicio)
+        return 0
+    except ValueError as error:
         print(
-            "No fue posible iniciar la aplicación. Revise XAMPP, la base y .env.\n"
+            "La configuración de la base de datos no es válida. "
+            "Revise DB_PORT y los demás valores de .env.\n"
             f"Detalle técnico: {error}"
         )
-        raise SystemExit(1) from error
+        return 1
+    except PeeweeException as error:
+        print(
+            "No fue posible conectar con la base de datos. "
+            "Revise MySQL/XAMPP y el archivo .env.\n"
+            f"Detalle técnico: {error}"
+        )
+        return 1
+    finally:
+        try:
+            if not base_datos_proxy.is_closed():
+                base_datos_proxy.close()
+        except (AttributeError, PeeweeException):
+            pass
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

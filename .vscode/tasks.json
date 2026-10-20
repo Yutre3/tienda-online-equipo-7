@@ -1,0 +1,72 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Crear entorno virtual",
+      "type": "process",
+      "command": "python3",
+      "windows": { "command": "py" },
+      "args": ["-m", "venv", ".venv"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Instalar dependencias",
+      "type": "process",
+      "command": ".venv/bin/python",
+      "windows": { "command": ".venv\\Scripts\\python.exe" },
+      "args": ["-m", "pip", "install", "-r", "requirements.txt"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Crear configuración local",
+      "type": "process",
+      "command": "python3",
+      "windows": { "command": "py" },
+      "args": [
+        "-c",
+        "from pathlib import Path; p=Path('.env'); p.exists() or p.write_text(Path('.env.example').read_text(encoding='utf-8'), encoding='utf-8')"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Preparar proyecto",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Crear entorno virtual",
+        "Instalar dependencias",
+        "Crear configuración local"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Ejecutar pruebas",
+      "type": "process",
+      "command": ".venv/bin/python",
+      "windows": { "command": ".venv\\Scripts\\python.exe" },
+      "args": ["-m", "pytest", "-q"],
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Ejecutar tienda",
+      "type": "process",
+      "command": ".venv/bin/python",
+      "windows": { "command": ".venv\\Scripts\\python.exe" },
+      "args": ["app.py"],
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Abrir phpMyAdmin",
+      "type": "process",
+      "command": "xdg-open",
+      "args": ["http://localhost/phpmyadmin/index.php?route=/database/structure&db=tienda_online"],
+      "windows": {
+        "command": "cmd",
+        "args": ["/c", "start", "", "http://localhost/phpmyadmin/index.php?route=/database/structure&db=tienda_online"]
+      },
+      "osx": { "command": "open" },
+      "problemMatcher": []
+    }
+  ]
+}
