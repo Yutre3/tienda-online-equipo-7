@@ -1,4 +1,4 @@
-"""Punto de entrada de la aplicación de tienda en línea."""
+"""Punto de entrada de la aplicación de tienda en línea..."""
 
 import mysql.connector
 
