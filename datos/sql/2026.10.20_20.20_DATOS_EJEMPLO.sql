@@ -1,5 +1,11 @@
 USE tienda_online;
 
+INSERT INTO paises (pais, nacionalidad, iso2, iso3, habilitado) VALUES
+    ('Chile', 'Chilena', 'CL', 'CHL', TRUE)
+ON DUPLICATE KEY UPDATE
+    nacionalidad = VALUES(nacionalidad),
+    habilitado = VALUES(habilitado);
+
 INSERT INTO clientes (nombre, correo) VALUES
     ('Cliente de demostración', 'cliente@ejemplo.cl')
 ON DUPLICATE KEY UPDATE nombre = VALUES(nombre);

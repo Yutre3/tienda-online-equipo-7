@@ -68,10 +68,18 @@ def test_scripts_sql_cubren_esquema_usuario_y_datos() -> None:
     usuario = (carpeta / "2026.10.20_20.10_CREATE_USER.sql").read_text(encoding="utf-8")
     datos = (carpeta / "2026.10.20_20.20_DATOS_EJEMPLO.sql").read_text(encoding="utf-8")
 
-    for tabla in ("clientes", "productos", "pedidos", "detalles_pedido"):
+    for tabla in (
+        "paises",
+        "usuarios",
+        "clientes",
+        "productos",
+        "pedidos",
+        "detalles_pedido",
+    ):
         assert f"CREATE TABLE IF NOT EXISTS {tabla}" in ddl
     assert "'tienda_app'@'localhost'" in usuario
     assert "GRANT SELECT, INSERT, UPDATE, DELETE" in usuario
+    assert "INSERT INTO paises" in datos
     assert "INSERT INTO clientes" in datos
     assert "INSERT INTO productos" in datos
 

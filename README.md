@@ -1,6 +1,6 @@
 # Tienda en línea – Equipo 7
 
-**Integrantes:** Manuel Huichapan y Bastian Lara.
+**Integrantes:** Luis Huenchul, Manuel Huichapan y Bastian Lara.
 
 Aplicación de consola desarrollada en Python para administrar clientes, productos, inventario y pedidos. El proyecto adapta al tema de tienda en línea la separación modular del repositorio del profesor `baileytorch/IEI_N2_C2_POO` y demuestra programación orientada a objetos, ORM y conexión segura a MySQL/MariaDB.
 
@@ -9,6 +9,7 @@ Aplicación de consola desarrollada en Python para administrar clientes, product
 - Clientes: registrar, listar, editar y eliminar.
 - Productos: registrar, listar, editar y eliminar con SKU único, precio y stock.
 - Pedidos: crear, consultar detalle, agregar o quitar productos, confirmar, cancelar y eliminar.
+- Usuarios: registrar, listar, actualizar y deshabilitar con RUT chileno validado y contraseña protegida con bcrypt.
 - Inventario transaccional: agregar descuenta stock; quitar, cancelar o eliminar devuelve las unidades correspondientes.
 - Validación de nombres, correos, SKU, precios, cantidades, estados e identificadores.
 - Tablas de consola con PrettyTable y mensajes comprensibles ante entradas incorrectas.
@@ -33,7 +34,8 @@ TI3021_U2_EF01/
 │   └── servicios.py          Reglas y transacciones
 ├── presentacion/             Menús, entradas y tablas
 ├── tests/                    Pruebas automáticas
-├── docs/DIAGRAMA_UML.md      Modelo de clases y relaciones
+├── DIAGRAMA_UML.md           Diagrama UML en la raíz, según INACAP
+├── docs/DIAGRAMA_UML.md      Copia del modelo y las relaciones
 ├── .env.example              Plantilla sin secretos
 ├── requirements.txt         Dependencias fijadas
 └── .vscode/                  Ejecución, pruebas y SQLTools
@@ -77,8 +79,11 @@ python -m pip install -r requirements.txt
 cp .env.example .env
 ```
 
-## Base portátil incluida
+## Verificar la conexión desde Visual Studio Code
 
+Seleccione **Terminal > Ejecutar tarea > Verificar conexión de base de datos**. Esta comprobación utiliza el motor indicado en `.env`, consulta las seis tablas (`paises`, `usuarios`, `clientes`, `productos`, `pedidos` y `detalles_pedido`) y muestra su cantidad de registros sin cambiarlos. Para comprobar la base de phpMyAdmin debe configurar `DB_ENGINE=mysql` y las credenciales reales en el `.env` local (no en GitHub); MySQL/XAMPP debe estar iniciado. Para la base SQLite portátil use `DB_ENGINE=sqlite` y ejecute primero **Ejecutar tienda** para crear las tablas si aún no existen.
+
+## Base portátil incluida
 La configuración predeterminada usa SQLite. Al ejecutar `app.py` se crea automáticamente `datos/tienda_online.db`, junto con todas las tablas y los mismos datos iniciales de demostración. Cada compañero obtiene su propia copia editable y persistente, sin depender de que el computador de otro integrante permanezca encendido.
 
 En Visual Studio Code se puede explorar mediante **SQLTools > Tienda Online (SQLite portátil)**. Esta modalidad evita el problema de compartir una dirección `localhost`, ya que `localhost` siempre apunta al computador de quien ejecuta el proyecto.
@@ -145,11 +150,12 @@ También está disponible la tarea **Ejecutar pruebas**. La suite cubre validaci
 - **Reutilización:** repositorios y lectores comunes evitan repetir lógica.
 - **Polimorfismo:** todos los modelos Peewee comparten el comportamiento definido por `Model` y `ModeloBase`.
 
-El diagrama completo se encuentra en `docs/DIAGRAMA_UML.md` y puede visualizarse directamente en GitHub o con una extensión Mermaid de Visual Studio Code.
+El diagrama completo se encuentra en `DIAGRAMA_UML.md` (raíz) y `docs/DIAGRAMA_UML.md` y puede visualizarse directamente en GitHub o con una extensión Mermaid de Visual Studio Code.
 
 ## Reglas importantes
 
 - El correo del cliente y el SKU del producto deben ser únicos.
+- El RUT y el correo de cada usuario deben ser únicos; la eliminación de usuarios es lógica para conservar el historial.
 - Los precios se guardan como centavos enteros para evitar errores de punto flotante.
 - Solo un pedido `CREADO` admite agregar o quitar productos.
 - Un pedido vacío no se puede confirmar.

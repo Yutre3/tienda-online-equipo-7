@@ -67,6 +67,18 @@
       },
       "osx": { "command": "open" },
       "problemMatcher": []
+    },
+    {
+      "label": "Verificar conexión de base de datos",
+      "type": "process",
+      "command": ".venv/bin/python",
+      "windows": {
+        "command": ".venv\\Scripts\\python.exe"
+      },
+      "args": [
+        "verificar_base_datos.py"
+      ],
+      "problemMatcher": []
     }
   ]
 }

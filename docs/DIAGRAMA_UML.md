@@ -41,7 +41,31 @@ classDiagram
         CONFIRMADO
         CANCELADO
     }
+    class PaisModelo {
+        +int id_pais
+        +str pais
+        +str nacionalidad
+        +str iso2
+        +str iso3
+        +bool habilitado
+    }
+    class UsuarioModelo {
+        +int id_usuario
+        +str rut
+        +str nombre
+        +str apellido
+        +str correo
+        +date fecha_nacimiento
+        +int genero
+        +bool habilitado
+        +str password
+    }
     class TiendaServicio {
+        +listar_paises(str nombre)
+        +registrar_usuario(...)
+        +listar_usuarios(bool habilitado)
+        +actualizar_usuario(str rut, ...)
+        +deshabilitar_usuario(str rut)
         +registrar_cliente(Cliente cliente)
         +registrar_producto(Producto producto)
         +crear_pedido(int cliente_id)
@@ -50,8 +74,10 @@ classDiagram
         +cancelar_pedido(int pedido_id)
     }
     class RepositorioClientes
+    class RepositorioPaises
     class RepositorioProductos
     class RepositorioPedidos
+    class RepositorioUsuarios
 
     Entidad <|-- Cliente
     Entidad <|-- Producto
@@ -61,14 +87,19 @@ classDiagram
     Pedido "1" *-- "0..*" DetallePedido : contiene
     Producto "1" --> "0..*" DetallePedido : referencia
     Pedido --> EstadoPedido
+    PaisModelo "1" --> "0..*" UsuarioModelo : nacionalidad
+    TiendaServicio --> RepositorioPaises
+    TiendaServicio --> RepositorioUsuarios
     TiendaServicio --> RepositorioClientes
     TiendaServicio --> RepositorioProductos
     TiendaServicio --> RepositorioPedidos
     RepositorioClientes --> Cliente
+    RepositorioPaises --> PaisModelo
     RepositorioProductos --> Producto
     RepositorioPedidos --> Pedido
+    RepositorioUsuarios --> UsuarioModelo
 ```
 
 ## Correspondencia con la base de datos
 
-`Cliente`, `Producto`, `Pedido` y `DetallePedido` se traducen respectivamente a las tablas `clientes`, `productos`, `pedidos` y `detalles_pedido`. `Pedido.cliente` se implementa con la clave foránea `cliente_id`; cada detalle contiene `pedido_id` y `producto_id`. La combinación de pedido y producto es única, por lo que agregar el mismo producto acumula la cantidad en una sola línea.
+`PaisModelo`, `UsuarioModelo`, `Cliente`, `Producto`, `Pedido` y `DetallePedido` se traducen respectivamente a las tablas `paises`, `usuarios`, `clientes`, `productos`, `pedidos` y `detalles_pedido`. `UsuarioModelo.pais` referencia `paises.id_pais`; `Pedido.cliente` se implementa con la clave foránea `cliente_id`; cada detalle contiene `pedido_id` y `producto_id`. La combinación de pedido y producto es única, por lo que agregar el mismo producto acumula la cantidad en una sola línea.
