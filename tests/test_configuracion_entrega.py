@@ -24,6 +24,8 @@ def test_dependencias_declaran_stack_del_profesor_y_pruebas() -> None:
     }
 
     assert paquetes == {
+        "bcrypt",
+        "maskpass",
         "peewee",
         "pymysql",
         "python-decouple",

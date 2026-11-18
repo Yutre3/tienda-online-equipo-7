@@ -5,5 +5,6 @@ OPCIONES_MENU = {
     "2": "Administrar productos",
     "3": "Administrar pedidos",
     "4": "Ver resumen general",
+    "5": "Administrar usuarios",
     "0": "Salir",
 }

@@ -37,11 +37,20 @@ def tablas() -> tuple[type, ...]:
     from datos.modelos.models import (
         ClienteModelo,
         DetallePedidoModelo,
+        PaisModelo,
         PedidoModelo,
         ProductoModelo,
+        UsuarioModelo,
     )
 
-    return ClienteModelo, ProductoModelo, PedidoModelo, DetallePedidoModelo
+    return (
+        PaisModelo,
+        UsuarioModelo,
+        ClienteModelo,
+        ProductoModelo,
+        PedidoModelo,
+        DetallePedidoModelo,
+    )
 
 
 def crear_tablas() -> None:
@@ -51,7 +60,17 @@ def crear_tablas() -> None:
 
 def cargar_datos_demostracion() -> None:
     """Carga el mismo conjunto inicial en una base nueva, sin duplicarlo."""
-    from datos.modelos.models import ClienteModelo, ProductoModelo
+    from datos.modelos.models import ClienteModelo, PaisModelo, ProductoModelo
+
+    PaisModelo.get_or_create(
+        iso2="CL",
+        defaults={
+            "pais": "Chile",
+            "nacionalidad": "Chilena",
+            "iso3": "CHL",
+            "habilitado": True,
+        },
+    )
 
     ClienteModelo.get_or_create(
         correo="cliente@ejemplo.cl",

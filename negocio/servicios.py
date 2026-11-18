@@ -1,10 +1,22 @@
 """Casos de uso y transacciones de la tienda en línea."""
 
+from datetime import date
+
+from auxiliares.validaciones import (
+    validar_correo,
+    validar_dato_obligatorio,
+    validar_fecha_nacimiento,
+    validar_genero,
+    validar_rut,
+)
 from datos.conexion import transaccion_escritura
+from datos.modelos import UsuarioModelo
 from datos.repositorios import (
     RepositorioClientes,
+    RepositorioPaises,
     RepositorioPedidos,
     RepositorioProductos,
+    RepositorioUsuarios,
 )
 from negocio.entidades import (
     Cliente,
@@ -14,6 +26,7 @@ from negocio.entidades import (
     Pedido,
     Producto,
 )
+from negocio.negocio_usuario import crear_hash_contrasenia
 
 
 def _id_requerido(identificador: int | None, tipo: str) -> int:
@@ -30,10 +43,97 @@ class TiendaServicio:
         clientes: RepositorioClientes | None = None,
         productos: RepositorioProductos | None = None,
         pedidos: RepositorioPedidos | None = None,
+        paises: RepositorioPaises | None = None,
+        usuarios: RepositorioUsuarios | None = None,
     ) -> None:
         self._clientes = clientes or RepositorioClientes()
         self._productos = productos or RepositorioProductos()
         self._pedidos = pedidos or RepositorioPedidos()
+        self._paises = paises or RepositorioPaises()
+        self._usuarios = usuarios or RepositorioUsuarios()
+
+    def listar_paises(self, nombre: str = ""):
+        return self._paises.buscar(nombre) if nombre.strip() else self._paises.listar_habilitados()
+
+    def registrar_usuario(
+        self,
+        *,
+        rut: str,
+        nombre: str,
+        apellido: str,
+        correo: str,
+        pais_id: int,
+        fecha_nacimiento: date | str,
+        genero: int | str,
+        contrasenia: str,
+    ) -> UsuarioModelo:
+        pais = self._paises.obtener(pais_id)
+        usuario = UsuarioModelo()
+        usuario.rut = validar_rut(rut)
+        usuario.nombre = validar_dato_obligatorio(nombre).title()
+        usuario.apellido = validar_dato_obligatorio(apellido).title()
+        usuario.correo = validar_correo(correo)
+        usuario.pais = pais
+        usuario.fecha_nacimiento = self._fecha_nacimiento(fecha_nacimiento)
+        usuario.genero = validar_genero(genero)
+        usuario.habilitado = True
+        usuario.password = crear_hash_contrasenia(contrasenia)
+        return self._usuarios.guardar(usuario)
+
+    def listar_usuarios(self, habilitado: bool | None = True) -> list[UsuarioModelo]:
+        return self._usuarios.listar(habilitado)
+
+    def buscar_usuario_rut(self, rut: str) -> UsuarioModelo:
+        usuario = self._usuarios.obtener_por_rut(validar_rut(rut))
+        if usuario is None:
+            raise ErrorDominio("No existe el usuario solicitado.")
+        return usuario
+
+    def buscar_usuario_correo(self, correo: str) -> UsuarioModelo:
+        usuario = self._usuarios.obtener_por_correo(validar_correo(correo))
+        if usuario is None:
+            raise ErrorDominio("No existe el usuario solicitado.")
+        return usuario
+
+    def actualizar_usuario(
+        self,
+        rut_actual: str,
+        *,
+        rut: str | None = None,
+        nombre: str | None = None,
+        apellido: str | None = None,
+        correo: str | None = None,
+        pais_id: int | None = None,
+        fecha_nacimiento: date | str | None = None,
+        genero: int | str | None = None,
+    ) -> UsuarioModelo:
+        usuario = self.buscar_usuario_rut(rut_actual)
+        if rut is not None:
+            usuario.rut = validar_rut(rut)
+        if nombre is not None:
+            usuario.nombre = validar_dato_obligatorio(nombre).title()
+        if apellido is not None:
+            usuario.apellido = validar_dato_obligatorio(apellido).title()
+        if correo is not None:
+            usuario.correo = validar_correo(correo)
+        if pais_id is not None:
+            usuario.pais = self._paises.obtener(pais_id)
+        if fecha_nacimiento is not None:
+            usuario.fecha_nacimiento = self._fecha_nacimiento(fecha_nacimiento)
+        if genero is not None:
+            usuario.genero = validar_genero(genero)
+        return self._usuarios.guardar(usuario)
+
+    def deshabilitar_usuario(self, rut: str) -> UsuarioModelo:
+        usuario = self.buscar_usuario_rut(rut)
+        usuario.habilitado = False
+        return self._usuarios.guardar(usuario)
+
+    @staticmethod
+    def _fecha_nacimiento(valor: date | str) -> date:
+        if isinstance(valor, date):
+            return valor
+        return validar_fecha_nacimiento(valor)
 
     def registrar_cliente(self, cliente: Cliente) -> Cliente:
         return self._clientes.crear(cliente)

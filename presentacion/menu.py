@@ -9,6 +9,12 @@ from auxiliares.opciones_menu import OPCIONES_MENU
 from negocio import Cliente, ErrorDominio, Producto, TiendaServicio
 from presentacion.entradas import Entrada, Salida, solicitar_entero, solicitar_texto
 from presentacion.tablas import tabla_clientes, tabla_detalles, tabla_pedidos, tabla_productos
+from presentacion.presentacion_usuario import (
+    crear_usuario,
+    eliminar_usuario,
+    modificar_usuario,
+    mostrar_listado_usuarios,
+)
 
 
 def _mostrar_opciones(titulo: str, opciones: dict[str, str], salida: Salida) -> None:
@@ -136,6 +142,23 @@ def _menu_pedidos(servicio: TiendaServicio, entrada: Entrada, salida: Salida) ->
     _bucle_submenu("PEDIDOS", opciones, acciones, entrada, salida)
 
 
+def _menu_usuarios(servicio: TiendaServicio, entrada: Entrada, salida: Salida) -> None:
+    opciones = {
+        "1": "Listado de usuarios",
+        "2": "Registrar usuario",
+        "3": "Actualizar usuario",
+        "4": "Eliminar usuario",
+        "0": "Volver",
+    }
+    acciones: dict[str, Callable[[], None]] = {
+        "1": lambda: mostrar_listado_usuarios(servicio, salida=salida),
+        "2": lambda: crear_usuario(servicio, entrada=entrada, salida=salida),
+        "3": lambda: modificar_usuario(servicio, entrada=entrada, salida=salida),
+        "4": lambda: eliminar_usuario(servicio, entrada=entrada, salida=salida),
+    }
+    _bucle_submenu("USUARIOS", opciones, acciones, entrada, salida)
+
+
 def _bucle_submenu(
     titulo: str,
     opciones: dict[str, str],
@@ -170,6 +193,7 @@ def menu_principal(
             salida(tabla_productos(servicio.listar_productos())),
             salida(tabla_pedidos(servicio.listar_pedidos())),
         ),
+        "5": lambda: _menu_usuarios(servicio, entrada, salida),
     }
     while True:
         _mostrar_opciones(f"{NOMBRE_APLICACION} v{VERSION_APLICACION}", OPCIONES_MENU, salida)
