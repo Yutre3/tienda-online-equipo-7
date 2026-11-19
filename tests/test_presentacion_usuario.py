@@ -161,6 +161,31 @@ def test_tabla_usuarios_muestra_pais_genero_y_estado(base_pruebas) -> None:
     assert "Deshabilitado" in tabla
 
 
+def test_busquedas_por_rut_y_correo_muestran_el_usuario_normalizado(
+    base_pruebas,
+) -> None:
+    pais = _pais()
+    servicio = TiendaServicio()
+    usuario = _usuario(servicio, pais)
+    mensajes: list[str] = []
+
+    por_rut = _presentacion().mostrar_usuario_por_rut(
+        servicio,
+        entrada=lambda _: "12.345.678-5",
+        salida=mensajes.append,
+    )
+    por_correo = _presentacion().mostrar_usuario_por_correo(
+        servicio,
+        entrada=lambda _: " ANA@EJEMPLO.CL ",
+        salida=mensajes.append,
+    )
+
+    assert por_rut.id_usuario == usuario.id_usuario
+    assert por_correo.id_usuario == usuario.id_usuario
+    assert sum(usuario.rut in mensaje for mensaje in mensajes) == 2
+    assert sum(usuario.correo in mensaje for mensaje in mensajes) == 2
+
+
 def test_login_usuario_solo_solicita_y_valida_correo() -> None:
     solicitudes: list[str] = []
 
@@ -185,4 +210,26 @@ def test_menu_principal_integra_submenu_usuarios_sin_alterar_salida(base_pruebas
 
     assert any("Administrar usuarios" in salida for salida in salidas)
     assert any("USUARIOS" in salida for salida in salidas)
+    assert salidas[-1] == "Programa finalizado."
+
+
+def test_submenu_usuarios_ofrece_busquedas_por_rut_y_correo(base_pruebas) -> None:
+    pais = _pais()
+    usuario = _usuario(TiendaServicio(), pais)
+    entradas = iter(
+        ["5", "5", usuario.rut, "6", usuario.correo, "0", "0"]
+    )
+    salidas: list[str] = []
+
+    menu_principal(
+        TiendaServicio(),
+        entrada=lambda _: next(entradas),
+        salida=salidas.append,
+    )
+
+    texto = "\n".join(salidas)
+    assert "Buscar por RUT" in texto
+    assert "Buscar por correo" in texto
+    assert texto.count(usuario.rut) == 2
+    assert texto.count(usuario.correo) == 2
     assert salidas[-1] == "Programa finalizado."

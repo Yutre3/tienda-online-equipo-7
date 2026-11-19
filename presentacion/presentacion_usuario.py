@@ -211,6 +211,32 @@ def mostrar_listado_usuarios(
     return resultado
 
 
+def mostrar_usuario_por_rut(
+    servicio: TiendaServicio,
+    *,
+    entrada: Entrada = input,
+    salida: Salida = print,
+) -> UsuarioModelo:
+    rut = solicitar_rut("RUT del usuario: ", entrada=entrada, salida=salida)
+    usuario = servicio.buscar_usuario_rut(rut)
+    salida(tabla_usuarios([usuario]))
+    return usuario
+
+
+def mostrar_usuario_por_correo(
+    servicio: TiendaServicio,
+    *,
+    entrada: Entrada = input,
+    salida: Salida = print,
+) -> UsuarioModelo:
+    correo = solicitar_correo(
+        "Correo del usuario: ", entrada=entrada, salida=salida
+    )
+    usuario = servicio.buscar_usuario_correo(correo)
+    salida(tabla_usuarios([usuario]))
+    return usuario
+
+
 def crear_usuario(
     servicio: TiendaServicio,
     *,

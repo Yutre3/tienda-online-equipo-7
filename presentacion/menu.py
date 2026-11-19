@@ -14,6 +14,8 @@ from presentacion.presentacion_usuario import (
     eliminar_usuario,
     modificar_usuario,
     mostrar_listado_usuarios,
+    mostrar_usuario_por_correo,
+    mostrar_usuario_por_rut,
 )
 
 
@@ -148,6 +150,8 @@ def _menu_usuarios(servicio: TiendaServicio, entrada: Entrada, salida: Salida) -
         "2": "Registrar usuario",
         "3": "Actualizar usuario",
         "4": "Eliminar usuario",
+        "5": "Buscar por RUT",
+        "6": "Buscar por correo",
         "0": "Volver",
     }
     acciones: dict[str, Callable[[], None]] = {
@@ -155,6 +159,12 @@ def _menu_usuarios(servicio: TiendaServicio, entrada: Entrada, salida: Salida) -
         "2": lambda: crear_usuario(servicio, entrada=entrada, salida=salida),
         "3": lambda: modificar_usuario(servicio, entrada=entrada, salida=salida),
         "4": lambda: eliminar_usuario(servicio, entrada=entrada, salida=salida),
+        "5": lambda: mostrar_usuario_por_rut(
+            servicio, entrada=entrada, salida=salida
+        ),
+        "6": lambda: mostrar_usuario_por_correo(
+            servicio, entrada=entrada, salida=salida
+        ),
     }
     _bucle_submenu("USUARIOS", opciones, acciones, entrada, salida)
 
