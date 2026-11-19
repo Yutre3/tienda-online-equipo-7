@@ -3,11 +3,47 @@ CREATE DATABASE IF NOT EXISTS tienda_online
 
 USE tienda_online;
 
+CREATE TABLE IF NOT EXISTS paises (
+    id_pais INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    pais VARCHAR(50) NOT NULL,
+    nacionalidad VARCHAR(50) NULL,
+    iso2 CHAR(2) NOT NULL,
+    iso3 CHAR(3) NOT NULL,
+    habilitado BOOLEAN NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (id_pais),
+    UNIQUE KEY uq_paises_pais (pais),
+    UNIQUE KEY uq_paises_iso2 (iso2),
+    UNIQUE KEY uq_paises_iso3 (iso3),
+    KEY idx_paises_habilitado (habilitado)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS usuarios (
+    id_usuario INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    rut VARCHAR(12) NOT NULL,
+    nombre VARCHAR(25) NOT NULL,
+    apellido VARCHAR(25) NOT NULL,
+    correo VARCHAR(191) NOT NULL,
+    pais INT UNSIGNED NOT NULL,
+    fecha_nacimiento DATE NOT NULL,
+    genero INT NOT NULL,
+    fecha_incorporacion DATE NOT NULL DEFAULT (CURRENT_DATE),
+    habilitado BOOLEAN NOT NULL DEFAULT TRUE,
+    password VARCHAR(60) NOT NULL,
+    PRIMARY KEY (id_usuario),
+    UNIQUE KEY uq_usuarios_rut (rut),
+    UNIQUE KEY uq_usuarios_correo (correo),
+    KEY idx_usuarios_pais (pais),
+    KEY idx_usuarios_habilitado (habilitado),
+    CONSTRAINT fk_usuarios_pais FOREIGN KEY (pais)
+        REFERENCES paises(id_pais) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT chk_usuarios_genero CHECK (genero IN (1, 2, 3))
+) ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS clientes (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     nombre VARCHAR(120) NOT NULL,
     correo VARCHAR(190) NOT NULL,
-    creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY uq_clientes_correo (correo),
     CONSTRAINT chk_clientes_nombre CHECK (CHAR_LENGTH(TRIM(nombre)) > 0),
@@ -16,14 +52,15 @@ CREATE TABLE IF NOT EXISTS clientes (
 
 CREATE TABLE IF NOT EXISTS productos (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    sku VARCHAR(50) NOT NULL,
     nombre VARCHAR(150) NOT NULL,
     descripcion TEXT NOT NULL,
     precio_centavos BIGINT UNSIGNED NOT NULL,
     stock INT UNSIGNED NOT NULL DEFAULT 0,
-    creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP,
+    creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
+    UNIQUE KEY uq_productos_sku (sku),
     KEY idx_productos_nombre (nombre),
     CONSTRAINT chk_productos_nombre CHECK (CHAR_LENGTH(TRIM(nombre)) > 0),
     CONSTRAINT chk_productos_precio CHECK (precio_centavos > 0)
@@ -32,15 +69,16 @@ CREATE TABLE IF NOT EXISTS productos (
 CREATE TABLE IF NOT EXISTS pedidos (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     cliente_id BIGINT UNSIGNED NOT NULL,
-    estado ENUM('CREADO', 'CONFIRMADO', 'CANCELADO') NOT NULL DEFAULT 'CREADO',
+    estado VARCHAR(20) NOT NULL DEFAULT 'CREADO',
     total_centavos BIGINT UNSIGNED NOT NULL DEFAULT 0,
-    creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP,
+    creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     KEY idx_pedidos_cliente (cliente_id),
+    KEY idx_pedidos_estado (estado),
     CONSTRAINT fk_pedidos_cliente FOREIGN KEY (cliente_id)
-        REFERENCES clientes(id) ON UPDATE CASCADE ON DELETE RESTRICT
+        REFERENCES clientes(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT chk_pedidos_estado CHECK (estado IN ('CREADO', 'CONFIRMADO', 'CANCELADO'))
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS detalles_pedido (
