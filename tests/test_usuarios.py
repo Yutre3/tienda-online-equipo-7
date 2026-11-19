@@ -218,6 +218,65 @@ def test_deshabilitar_usuario_conserva_registro_fisico(base_pruebas) -> None:
     assert servicio.buscar_usuario_rut(usuario.rut).id_usuario == usuario.id_usuario
 
 
+def test_migracion_agrega_password_sin_eliminar_usuarios_antiguos() -> None:
+    base = SqliteDatabase(":memory:", pragmas={"foreign_keys": 1})
+    configurar_base_datos(base)
+    base.connect()
+    base.execute_sql(
+        """
+        CREATE TABLE paises (
+            id_pais INTEGER PRIMARY KEY,
+            pais VARCHAR(50) NOT NULL,
+            nacionalidad VARCHAR(50),
+            iso2 VARCHAR(2) NOT NULL,
+            iso3 VARCHAR(3) NOT NULL,
+            habilitado INTEGER NOT NULL DEFAULT 1
+        )
+        """
+    )
+    base.execute_sql(
+        """
+        CREATE TABLE usuarios (
+            id_usuario INTEGER PRIMARY KEY,
+            rut VARCHAR(12) NOT NULL UNIQUE,
+            nombre VARCHAR(25) NOT NULL,
+            apellido VARCHAR(25) NOT NULL,
+            correo VARCHAR(191) NOT NULL,
+            pais INTEGER NOT NULL REFERENCES paises(id_pais),
+            fecha_nacimiento DATE NOT NULL,
+            genero INTEGER NOT NULL,
+            fecha_incorporacion DATE NOT NULL,
+            habilitado INTEGER NOT NULL DEFAULT 1
+        )
+        """
+    )
+    base.execute_sql(
+        "INSERT INTO paises VALUES (1, 'Chile', 'Chilena', 'CL', 'CHL', 1)"
+    )
+    base.execute_sql(
+        """
+        INSERT INTO usuarios VALUES (
+            7, '12345678-5', 'Ana', 'Pérez', 'ana@ejemplo.cl', 1,
+            '1990-05-10', 2, '2026-10-20', 1
+        )
+        """
+    )
+
+    try:
+        crear_tablas()
+
+        columnas = {columna.name for columna in base.get_columns("usuarios")}
+        usuario = _modelos().UsuarioModelo.get_by_id(7)
+        assert "password" in columnas
+        assert usuario.rut == "12345678-5"
+        assert usuario.correo == "ana@ejemplo.cl"
+        assert usuario.pais.pais == "Chile"
+        assert usuario.password is None
+        assert _modelos().UsuarioModelo.select().count() == 1
+    finally:
+        base.close()
+
+
 def test_usuario_persiste_despues_de_cerrar_y_reabrir_sqlite(tmp_path) -> None:
     ruta = tmp_path / "usuarios.db"
     primera = SqliteDatabase(ruta, pragmas={"foreign_keys": 1})

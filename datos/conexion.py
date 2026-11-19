@@ -96,26 +96,42 @@ def cargar_datos_demostracion() -> None:
 def migrar_esquema() -> None:
     """Actualiza de forma conservadora estructuras creadas por versiones previas."""
     base = base_datos_proxy.obj
-    if "productos" not in base.get_tables():
-        return
-    columnas = {columna.name for columna in base.get_columns("productos")}
-    if "sku" in columnas:
-        return
-
+    tablas_existentes = set(base.get_tables())
     migrador = SchemaMigrator.from_database(base)
-    migrate(migrador.add_column("productos", "sku", CharField(max_length=50, null=True)))
-    filas = base.execute_sql("SELECT id FROM productos ORDER BY id").fetchall()
-    for (identificador,) in filas:
-        base.execute_sql(
-            "UPDATE productos SET sku = ? WHERE id = ?"
-            if isinstance(base, SqliteDatabase)
-            else "UPDATE productos SET sku = %s WHERE id = %s",
-            (f"LEGACY-{identificador:06d}", identificador),
-        )
-    migrate(
-        migrador.add_not_null("productos", "sku"),
-        migrador.add_index("productos", ("sku",), unique=True),
-    )
+
+    if "productos" in tablas_existentes:
+        columnas_producto = {
+            columna.name for columna in base.get_columns("productos")
+        }
+        if "sku" not in columnas_producto:
+            migrate(
+                migrador.add_column(
+                    "productos", "sku", CharField(max_length=50, null=True)
+                )
+            )
+            filas = base.execute_sql("SELECT id FROM productos ORDER BY id").fetchall()
+            for (identificador,) in filas:
+                base.execute_sql(
+                    "UPDATE productos SET sku = ? WHERE id = ?"
+                    if isinstance(base, SqliteDatabase)
+                    else "UPDATE productos SET sku = %s WHERE id = %s",
+                    (f"LEGACY-{identificador:06d}", identificador),
+                )
+            migrate(
+                migrador.add_not_null("productos", "sku"),
+                migrador.add_index("productos", ("sku",), unique=True),
+            )
+
+    if "usuarios" in tablas_existentes:
+        columnas_usuario = {
+            columna.name for columna in base.get_columns("usuarios")
+        }
+        if "password" not in columnas_usuario:
+            migrate(
+                migrador.add_column(
+                    "usuarios", "password", CharField(max_length=60, null=True)
+                )
+            )
 
 
 def transaccion_escritura() -> AbstractContextManager:
