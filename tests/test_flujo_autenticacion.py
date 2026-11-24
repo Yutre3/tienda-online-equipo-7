@@ -173,6 +173,49 @@ def test_alta_inicial_crea_solo_el_primer_usuario_con_hash(base_pruebas) -> None
         )
 
 
+def test_alta_inicial_revalida_que_siga_siendo_la_primera_cuenta(
+    base_pruebas,
+) -> None:
+    pais = _pais()
+    servicio = TiendaServicio()
+    entradas = iter(
+        [
+            "12.345.678-5",
+            "Ana",
+            "Pérez",
+            "ana@ejemplo.cl",
+            "Chile",
+            str(pais.id_pais),
+            "10/05/1990",
+            "2",
+        ]
+    )
+    otra_sesion_registrada = False
+
+    def entrada_intercalada(mensaje: str) -> str:
+        nonlocal otra_sesion_registrada
+        if not otra_sesion_registrada:
+            otra_sesion_registrada = True
+            _usuario(
+                TiendaServicio(),
+                pais,
+                rut="6-K",
+                correo="otra.sesion@ejemplo.cl",
+            )
+        return next(entradas)
+
+    with pytest.raises(ErrorDominio, match="instalación inicial"):
+        preparar_primer_usuario(
+            servicio,
+            entrada=entrada_intercalada,
+            salida=lambda _: None,
+            lector_contrasenia=lambda _: "Segura1!",
+        )
+
+    assert UsuarioModelo.select().count() == 1
+    assert UsuarioModelo.get().correo == "otra.sesion@ejemplo.cl"
+
+
 def test_alta_inicial_sin_pais_termina_con_error_explicado(base_pruebas) -> None:
     with pytest.raises(ErrorDominio, match="país habilitado"):
         preparar_primer_usuario(
@@ -278,6 +321,39 @@ def test_recuperacion_cambia_solo_hash_y_conserva_estado(base_pruebas) -> None:
     assert bcrypt.checkpw(b"NuevaSegura1!", recuperado.password.encode("ascii"))
 
 
+def test_recuperacion_no_pisa_cambios_concurrentes(
+    base_pruebas, monkeypatch
+) -> None:
+    servicio = TiendaServicio()
+    usuario = _usuario(servicio, _pais())
+    import negocio.servicios as modulo_servicios
+
+    crear_hash_real = modulo_servicios.crear_hash_contrasenia
+
+    def crear_hash_con_cambio_concurrente(contrasenia: str) -> str:
+        UsuarioModelo.update(
+            habilitado=False, nombre="Cambio concurrente"
+        ).where(UsuarioModelo.id_usuario == usuario.id_usuario).execute()
+        return crear_hash_real(contrasenia)
+
+    monkeypatch.setattr(
+        modulo_servicios,
+        "crear_hash_contrasenia",
+        crear_hash_con_cambio_concurrente,
+    )
+
+    servicio.cambiar_contrasenia_usuario_existente(
+        usuario.correo, "NuevaSegura1!"
+    )
+
+    persistido = UsuarioModelo.get_by_id(usuario.id_usuario)
+    assert persistido.habilitado is False
+    assert persistido.nombre == "Cambio concurrente"
+    assert bcrypt.checkpw(
+        b"NuevaSegura1!", persistido.password.encode("ascii")
+    )
+
+
 def test_comando_local_recupera_una_cuenta_existente(base_pruebas) -> None:
     servicio = TiendaServicio()
     usuario = _usuario(servicio, _pais())
@@ -293,3 +369,16 @@ def test_comando_local_recupera_una_cuenta_existente(base_pruebas) -> None:
     assert resultado == 0
     assert servicio.autenticar_usuario(usuario.correo, "NuevaSegura1!")
     assert "actualizada" in "\n".join(mensajes).lower()
+
+
+def test_cancelar_recuperacion_termina_sin_traza(base_pruebas) -> None:
+    mensajes: list[str] = []
+
+    resultado = recuperar_acceso.main(
+        servicio=TiendaServicio(),
+        entrada=lambda _: (_ for _ in ()).throw(EOFError),
+        salida=mensajes.append,
+    )
+
+    assert resultado == 0
+    assert "cancelada" in "\n".join(mensajes).lower()

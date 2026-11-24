@@ -36,6 +36,9 @@ def main(
         servicio.cambiar_contrasenia_usuario_existente(correo, contrasenia)
         salida("Contraseña actualizada. El estado de la cuenta no fue modificado.")
         return 0
+    except (EOFError, KeyboardInterrupt):
+        salida("Recuperación cancelada de forma segura.")
+        return 0
     except (ErrorDominio, PeeweeException, ValueError) as error:
         salida(f"No fue posible recuperar el acceso: {error}")
         return 1

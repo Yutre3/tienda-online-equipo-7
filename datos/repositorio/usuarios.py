@@ -1,7 +1,8 @@
 """Funciones Peewee para usuarios y su baja lógica."""
 
-from peewee import IntegrityError
+from peewee import IntegrityError, SqliteDatabase
 
+from datos.conexion import base_datos_proxy, transaccion_escritura
 from datos.modelos import PaisModelo, UsuarioModelo
 from negocio.entidades import ErrorDominio
 
@@ -26,6 +27,41 @@ def guardar_usuario(usuario: UsuarioModelo) -> UsuarioModelo:
             "Ya existe otro usuario con el mismo RUT o correo."
         ) from error
     return usuario
+
+
+def guardar_primer_usuario(usuario: UsuarioModelo) -> UsuarioModelo:
+    """Inserta una única cuenta inicial bajo un bloqueo de escritura."""
+    with transaccion_escritura():
+        base = base_datos_proxy.obj
+        if isinstance(base, SqliteDatabase):
+            existe_usuario = cantidad_usuarios() > 0
+        else:
+            # Todas las instalaciones tienen un país antes del alta inicial.
+            # Bloquear siempre la primera fila entrega el mismo mutex en MySQL.
+            PaisModelo.select(PaisModelo.id_pais).order_by(
+                PaisModelo.id_pais
+            ).for_update().get()
+            existe_usuario = (
+                UsuarioModelo.select(UsuarioModelo.id_usuario)
+                .for_update()
+                .first()
+                is not None
+            )
+        if existe_usuario:
+            raise ErrorDominio(
+                "La preparación del primer usuario solo está disponible "
+                "durante la instalación inicial."
+            )
+        return guardar_usuario(usuario)
+
+
+def actualizar_password_usuario(
+    usuario: UsuarioModelo, password: str
+) -> UsuarioModelo:
+    """Actualiza solo el hash sin sobrescribir cambios concurrentes."""
+    usuario.password = password
+    usuario.save(only=[UsuarioModelo.password])
+    return UsuarioModelo.get_by_id(usuario.id_usuario)
 
 
 def _listado(habilitado: bool | None) -> list[UsuarioModelo]:

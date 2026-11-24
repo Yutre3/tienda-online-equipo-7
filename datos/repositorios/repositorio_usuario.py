@@ -2,7 +2,9 @@
 
 from datos.modelos import UsuarioModelo
 from datos.repositorio.usuarios import (
+    actualizar_password_usuario,
     cantidad_usuarios,
+    guardar_primer_usuario,
     guardar_usuario,
     listado_usuarios,
     listado_usuarios_deshabilitados,
@@ -15,6 +17,14 @@ from datos.repositorio.usuarios import (
 class RepositorioUsuarios:
     def guardar(self, usuario: UsuarioModelo) -> UsuarioModelo:
         return guardar_usuario(usuario)
+
+    def guardar_primero(self, usuario: UsuarioModelo) -> UsuarioModelo:
+        return guardar_primer_usuario(usuario)
+
+    def actualizar_password(
+        self, usuario: UsuarioModelo, password: str
+    ) -> UsuarioModelo:
+        return actualizar_password_usuario(usuario, password)
 
     def listar(self, habilitado: bool | None = True) -> list[UsuarioModelo]:
         if habilitado is True:
@@ -32,8 +42,10 @@ class RepositorioUsuarios:
 
 __all__ = [
     "RepositorioUsuarios",
+    "actualizar_password_usuario",
     "cantidad_usuarios",
     "guardar_usuario",
+    "guardar_primer_usuario",
     "listado_usuarios",
     "listado_usuarios_deshabilitados",
     "listado_usuarios_habilitados",

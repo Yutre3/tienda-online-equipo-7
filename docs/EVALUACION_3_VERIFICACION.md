@@ -6,7 +6,7 @@ Este documento relaciona la implementación con los once criterios informados pa
 
 ## Resultado técnico reproducible
 
-- `.venv/bin/python -m pytest -q`: **125 pruebas aprobadas** (la duración depende del equipo).
+- `.venv/bin/python -m pytest -q`: **128 pruebas aprobadas** (la duración depende del equipo).
 - `.venv/bin/python -m compileall -q app.py main.py auxiliares datos negocio presentacion tests`: código de salida 0.
 - `git diff --check`: sin errores de espacios.
 - Búsqueda de marcadores de conflicto: sin resultados.
@@ -27,19 +27,19 @@ Este documento relaciona la implementación con los once criterios informados pa
 | 4 | Repositorios | `datos/repositorio/clientes.py`, `productos.py`, `pedidos.py`, `usuarios.py`, `paises.py` implementan funciones Peewee. Las clases anteriores solo delegan. | `tests/test_repositorios_funcionales.py` comprueba funciones, CRUD real y uso de `save()`; `tests/test_repositorios.py` comprueba compatibilidad. | Completo. El descuento de stock conserva su `UPDATE` condicional atómico. |
 | 5 | CRUD | Clientes, productos y pedidos siguen expuestos en `presentacion/menu.py` y coordinados por `negocio/servicios.py`. | `tests/test_repositorios.py`, `tests/test_servicios.py`, `tests/test_presentacion.py`; reglas de detalle, estados, cancelación y eliminación. | Completo dentro de las operaciones definidas. |
 | 6 | Usuarios | Registro, tres listados, búsqueda por RUT/correo, actualización y baja lógica en `negocio/servicios.py`, `presentacion/presentacion_usuario.py` y repositorio funcional. | `tests/test_usuarios.py`, `tests/test_presentacion_usuario.py`, `tests/test_validaciones_usuario.py`. | Completo. La baja conserva físicamente la fila. |
-| 7 | Seguridad | `maskpass` con respaldo `getpass`, hash bcrypt textual de 60 caracteres, verificación `bcrypt.checkpw()`, mensaje genérico y hash ficticio para rutas rechazadas. `.env` está ignorado. | Casos de hash/no texto plano, usuario inexistente, clave errónea, deshabilitado, hash inválido y comprobación temporal en `tests/test_usuarios.py`; escaneo de secretos. | Completo para la aplicación local. |
+| 7 | Seguridad | `maskpass` con respaldo `getpass`, hash bcrypt textual de 60 caracteres, verificación `bcrypt.checkpw()`, mensaje genérico y hash ficticio para rutas rechazadas. La recuperación actualiza solo `password`; `.env` está ignorado. | Casos de hash/no texto plano, usuario inexistente, clave errónea, deshabilitado, hash inválido, cambios concurrentes y comprobación temporal en `tests/test_usuarios.py` y `tests/test_flujo_autenticacion.py`; escaneo de secretos. | Completo para la aplicación local. |
 | 8 | Login | `app.ejecutar_aplicacion()` impone Aplicación → Login → Validación → Menú; `login_usuario()` y `TiendaServicio.autenticar_usuario()` se reutilizan. Logout reevalúa cuentas. | `tests/test_flujo_autenticacion.py`: acceso correcto, rechazos, cancelación, logout, última cuenta y ausencia de ruta de login dentro del menú. | Completo. No existe una ruta normal desde `main.py` al menú sin autenticación. |
 | 9 | Instalación y ejecución | `README.md`, `requirements.txt`, `.env.example`, `.vscode/`, `main.py`; alta inicial segura y `python -m auxiliares.recuperar_acceso`. | `tests/test_configuracion_entrega.py`; `tests/test_puntos_entrada.py` ejecuta `main.py` y `app.py` en subprocesos controlados. | Completo para SQLite/VS Code. MySQL requiere configuración local del evaluador. |
-| 10 | Calidad del código | Tipos, separación de capas, funciones canónicas sin duplicar consultas, adaptadores compatibles, errores de dominio y pruebas de regresión. | 125 pruebas, `compileall`, JSON válido, `git diff --check`, ausencia de conflictos y revisión de secretos. | Completo según comprobaciones automáticas; queda sujeta a revisión académica. |
+| 10 | Calidad del código | Tipos, separación de capas, funciones canónicas sin duplicar consultas, adaptadores compatibles, errores de dominio y pruebas de regresión. | 128 pruebas, `compileall`, JSON válido, `git diff --check`, ausencia de conflictos y revisión de secretos. | Completo según comprobaciones automáticas; queda sujeta a revisión académica. |
 | 11 | Funcionamiento integral | Inicio, preparación segura, login, CRUD, pedidos, inventario, logout y persistencia están conectados por `app.py`/`main.py`. | Arranque SQLite temporal; suite integral; pruebas concurrentes de cancelación/stock; reapertura de base y compatibilidad de entradas. | Completo en SQLite. La ejecución integral MySQL no fue observable sin credenciales locales. |
 
 ## Preparación inicial y recuperación
 
-- Con cero filas en `usuarios`, `preparar_primer_usuario()` usa las validaciones y formulario existentes y almacena bcrypt.
+- Con cero filas en `usuarios`, `preparar_primer_usuario()` usa las validaciones y formulario existentes, revalida bajo una escritura serializada y almacena bcrypt.
 - Con cualquier fila existente, el alta inicial queda cerrada.
 - Con cuentas habilitadas pero hashes inválidos, la aplicación orienta al comando local y no crea otra cuenta.
 - Con todas las cuentas deshabilitadas, informa que cambiar una clave no habilita una cuenta.
-- La recuperación modifica solo `password`; conserva identidad, datos y estado.
+- La recuperación modifica solo `password`; conserva identidad, datos y estado incluso si cambian concurrentemente.
 
 ## Pendiente externo
 

@@ -58,6 +58,8 @@ def test_repositorios_obligatorios_exponen_funciones() -> None:
         pedidos.cambiar_estado_pedido,
         pedidos.eliminar_pedido,
         usuarios.guardar_usuario,
+        usuarios.guardar_primer_usuario,
+        usuarios.actualizar_password_usuario,
         usuarios.listado_usuarios,
         usuarios.obtener_usuario_rut,
         usuarios.obtener_usuario_correo,

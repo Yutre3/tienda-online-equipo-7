@@ -85,6 +85,54 @@ class TiendaServicio:
         genero: int | str,
         contrasenia: str,
     ) -> UsuarioModelo:
+        usuario = self._construir_usuario(
+            rut=rut,
+            nombre=nombre,
+            apellido=apellido,
+            correo=correo,
+            pais_id=pais_id,
+            fecha_nacimiento=fecha_nacimiento,
+            genero=genero,
+            contrasenia=contrasenia,
+        )
+        return self._usuarios.guardar(usuario)
+
+    def registrar_primer_usuario(
+        self,
+        *,
+        rut: str,
+        nombre: str,
+        apellido: str,
+        correo: str,
+        pais_id: int,
+        fecha_nacimiento: date | str,
+        genero: int | str,
+        contrasenia: str,
+    ) -> UsuarioModelo:
+        usuario = self._construir_usuario(
+            rut=rut,
+            nombre=nombre,
+            apellido=apellido,
+            correo=correo,
+            pais_id=pais_id,
+            fecha_nacimiento=fecha_nacimiento,
+            genero=genero,
+            contrasenia=contrasenia,
+        )
+        return self._usuarios.guardar_primero(usuario)
+
+    def _construir_usuario(
+        self,
+        *,
+        rut: str,
+        nombre: str,
+        apellido: str,
+        correo: str,
+        pais_id: int,
+        fecha_nacimiento: date | str,
+        genero: int | str,
+        contrasenia: str,
+    ) -> UsuarioModelo:
         pais = self._paises.obtener(pais_id)
         usuario = UsuarioModelo()
         usuario.rut = validar_rut(rut)
@@ -96,7 +144,7 @@ class TiendaServicio:
         usuario.genero = validar_genero(genero)
         usuario.habilitado = True
         usuario.password = crear_hash_contrasenia(contrasenia)
-        return self._usuarios.guardar(usuario)
+        return usuario
 
     def listar_usuarios(self, habilitado: bool | None = True) -> list[UsuarioModelo]:
         return self._usuarios.listar(habilitado)
@@ -161,8 +209,8 @@ class TiendaServicio:
     ) -> UsuarioModelo:
         """Reemplaza solo el hash de una cuenta ya existente."""
         usuario = self.buscar_usuario_correo(correo)
-        usuario.password = crear_hash_contrasenia(contrasenia)
-        return self._usuarios.guardar(usuario)
+        password = crear_hash_contrasenia(contrasenia)
+        return self._usuarios.actualizar_password(usuario, password)
 
     def actualizar_usuario(
         self,
