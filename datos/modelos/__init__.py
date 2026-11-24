@@ -1,5 +1,6 @@
 """Modelos ORM de la tienda."""
 
+from datos.model_base import ModelBase, ModeloBase
 from datos.modelos.models import (
     ClienteModelo,
     DetallePedidoModelo,
@@ -10,6 +11,8 @@ from datos.modelos.models import (
 )
 
 __all__ = [
+    "ModelBase",
+    "ModeloBase",
     "ClienteModelo",
     "DetallePedidoModelo",
     "PaisModelo",

@@ -11,19 +11,13 @@ from peewee import (
     DateTimeField,
     ForeignKeyField,
     IntegerField,
-    Model,
     TextField,
 )
 
-from datos.conexion import base_datos_proxy
+from datos.model_base import ModelBase, ModeloBase
 
 
-class ModeloBase(Model):
-    class Meta:
-        database = base_datos_proxy
-
-
-class PaisModelo(ModeloBase):
+class PaisModelo(ModelBase):
     id_pais = AutoField()
     pais = CharField(max_length=50, unique=True)
     nacionalidad = CharField(max_length=50, null=True)
@@ -35,7 +29,7 @@ class PaisModelo(ModeloBase):
         table_name = "paises"
 
 
-class UsuarioModelo(ModeloBase):
+class UsuarioModelo(ModelBase):
     id_usuario = AutoField()
     rut = CharField(max_length=12, unique=True)
     nombre = CharField(max_length=25)
@@ -58,7 +52,7 @@ class UsuarioModelo(ModeloBase):
         table_name = "usuarios"
 
 
-class ClienteModelo(ModeloBase):
+class ClienteModelo(ModelBase):
     id = AutoField()
     nombre = CharField(max_length=120)
     correo = CharField(max_length=190, unique=True)
@@ -68,7 +62,7 @@ class ClienteModelo(ModeloBase):
         table_name = "clientes"
 
 
-class ProductoModelo(ModeloBase):
+class ProductoModelo(ModelBase):
     id = AutoField()
     sku = CharField(max_length=50, unique=True)
     nombre = CharField(max_length=150, index=True)
@@ -82,7 +76,7 @@ class ProductoModelo(ModeloBase):
         table_name = "productos"
 
 
-class PedidoModelo(ModeloBase):
+class PedidoModelo(ModelBase):
     id = AutoField()
     cliente = ForeignKeyField(
         ClienteModelo,
@@ -100,7 +94,7 @@ class PedidoModelo(ModeloBase):
         table_name = "pedidos"
 
 
-class DetallePedidoModelo(ModeloBase):
+class DetallePedidoModelo(ModelBase):
     id = AutoField()
     pedido = ForeignKeyField(
         PedidoModelo,
