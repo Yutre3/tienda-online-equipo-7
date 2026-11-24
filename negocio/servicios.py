@@ -1,6 +1,9 @@
 """Casos de uso y transacciones de la tienda en línea."""
 
 from datetime import date
+import re
+
+import bcrypt
 
 from auxiliares.validaciones import (
     validar_correo,
@@ -27,6 +30,21 @@ from negocio.entidades import (
     Producto,
 )
 from negocio.negocio_usuario import crear_hash_contrasenia
+
+
+_HASH_BCRYPT_FICTICIO = (
+    b"$2b$12$/b1Q4Gffqego9nHl1WBd4eRNwFXk6hLFELK5/2MqK38UVGwBQnX/m"
+)
+
+
+def _preparar_hash_bcrypt(hash_guardado: object) -> tuple[bytes, bool]:
+    if not isinstance(hash_guardado, str) or not re.fullmatch(
+        r"\$2[aby]\$(?:0[4-9]|[12]\d|3[01])\$"
+        r"[./A-Za-z0-9]{21}[.Oeu][./A-Za-z0-9]{31}",
+        hash_guardado,
+    ):
+        return _HASH_BCRYPT_FICTICIO, False
+    return hash_guardado.encode("ascii"), True
 
 
 def _id_requerido(identificador: int | None, tipo: str) -> int:
@@ -93,6 +111,34 @@ class TiendaServicio:
         usuario = self._usuarios.obtener_por_correo(validar_correo(correo))
         if usuario is None:
             raise ErrorDominio("No existe el usuario solicitado.")
+        return usuario
+
+    def autenticar_usuario(
+        self, correo: str, contrasenia: str
+    ) -> UsuarioModelo:
+        mensaje = "No fue posible iniciar sesión con las credenciales ingresadas."
+        usuario = None
+        try:
+            usuario = self.buscar_usuario_correo(correo)
+        except (ErrorDominio, ValueError):
+            pass
+
+        hash_guardado = getattr(usuario, "password", None)
+        hash_bcrypt, hash_valido = _preparar_hash_bcrypt(hash_guardado)
+
+        try:
+            coincide = bcrypt.checkpw(
+                contrasenia.encode("utf-8"), hash_bcrypt
+            )
+        except (AttributeError, ValueError):
+            coincide = False
+        if (
+            usuario is None
+            or not usuario.habilitado
+            or not hash_valido
+            or not coincide
+        ):
+            raise ErrorDominio(mensaje)
         return usuario
 
     def actualizar_usuario(

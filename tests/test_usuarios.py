@@ -164,6 +164,123 @@ def test_buscar_usuario_por_rut_y_correo_normalizados(base_pruebas) -> None:
         servicio.buscar_usuario_correo("nadie@ejemplo.cl")
 
 
+def test_autenticar_usuario_acepta_correo_normalizado_y_contrasenia_correcta(
+    base_pruebas,
+) -> None:
+    pais = _crear_pais()
+    servicio = TiendaServicio()
+    creado = _registrar_usuario(servicio, pais.id_pais)
+
+    autenticado = servicio.autenticar_usuario(
+        " ANA@EJEMPLO.CL ", "Segura1!"
+    )
+
+    assert autenticado.id_usuario == creado.id_usuario
+
+
+def test_autenticar_usuario_rechaza_contrasenia_incorrecta(base_pruebas) -> None:
+    pais = _crear_pais()
+    servicio = TiendaServicio()
+    _registrar_usuario(servicio, pais.id_pais)
+
+    with pytest.raises(ErrorDominio, match="credenciales"):
+        servicio.autenticar_usuario("ana@ejemplo.cl", "Incorrecta1!")
+
+
+def test_autenticar_usuario_rechaza_usuario_inexistente(base_pruebas) -> None:
+    with pytest.raises(ErrorDominio, match="credenciales"):
+        TiendaServicio().autenticar_usuario(
+            "nadie@ejemplo.cl", "Cualquier1!"
+        )
+
+
+def test_autenticar_usuario_rechaza_usuario_deshabilitado(base_pruebas) -> None:
+    pais = _crear_pais()
+    servicio = TiendaServicio()
+    usuario = _registrar_usuario(servicio, pais.id_pais)
+    servicio.deshabilitar_usuario(usuario.rut)
+
+    with pytest.raises(ErrorDominio, match="credenciales"):
+        servicio.autenticar_usuario("ana@ejemplo.cl", "Segura1!")
+
+
+@pytest.mark.parametrize("hash_guardado", ["", "hash-invalido"])
+def test_autenticar_usuario_rechaza_hash_vacio_o_invalido(
+    base_pruebas, hash_guardado: str
+) -> None:
+    pais = _crear_pais()
+    servicio = TiendaServicio()
+    usuario = _registrar_usuario(servicio, pais.id_pais)
+    usuario.password = hash_guardado
+    usuario.save()
+
+    with pytest.raises(ErrorDominio, match="credenciales"):
+        servicio.autenticar_usuario("ana@ejemplo.cl", "Segura1!")
+
+
+def test_autenticar_usuario_no_exige_complejidad_a_la_contrasenia(
+    base_pruebas,
+) -> None:
+    pais = _crear_pais()
+    servicio = TiendaServicio()
+    usuario = _registrar_usuario(servicio, pais.id_pais)
+    usuario.password = bcrypt.hashpw(b"breve", bcrypt.gensalt()).decode("ascii")
+    usuario.save()
+
+    autenticado = servicio.autenticar_usuario("ana@ejemplo.cl", "breve")
+
+    assert autenticado.id_usuario == usuario.id_usuario
+
+
+@pytest.mark.parametrize(
+    "estado",
+    [
+        "inexistente",
+        "deshabilitado",
+        "hash-vacio",
+        "hash-invalido",
+        "hash-formato-aparente",
+    ],
+)
+def test_autenticar_usuario_ejecuta_bcrypt_en_todas_las_rutas_de_rechazo(
+    base_pruebas, monkeypatch, estado: str
+) -> None:
+    servicio = TiendaServicio()
+    correo = "nadie@ejemplo.cl"
+    if estado != "inexistente":
+        pais = _crear_pais()
+        usuario = _registrar_usuario(servicio, pais.id_pais)
+        correo = usuario.correo
+        if estado == "deshabilitado":
+            servicio.deshabilitar_usuario(usuario.rut)
+        elif estado == "hash-vacio":
+            usuario.password = ""
+            usuario.save()
+        elif estado == "hash-invalido":
+            usuario.password = "hash-invalido"
+            usuario.save()
+        elif estado == "hash-formato-aparente":
+            usuario.password = "$2b$12$" + "A" * 53
+            usuario.save()
+
+    hashes_comprobados: list[bytes] = []
+    comprobar_real = bcrypt.checkpw
+
+    def comprobar(_: bytes, hash_bcrypt: bytes) -> bool:
+        hashes_comprobados.append(hash_bcrypt)
+        return False
+
+    monkeypatch.setattr(bcrypt, "checkpw", comprobar)
+
+    with pytest.raises(ErrorDominio, match="credenciales"):
+        servicio.autenticar_usuario(correo, "Incorrecta1!")
+
+    assert len(hashes_comprobados) == 1
+    assert hashes_comprobados[0].startswith(b"$2b$12$")
+    assert len(hashes_comprobados[0]) == 60
+    assert comprobar_real(b"no-coincide", hashes_comprobados[0]) is False
+
+
 def test_listados_separan_habilitados_deshabilitados_y_general(base_pruebas) -> None:
     pais = _crear_pais()
     servicio = TiendaServicio()

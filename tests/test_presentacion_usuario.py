@@ -3,6 +3,7 @@ import importlib
 
 import bcrypt
 
+from auxiliares.info_app import NOMBRE_APLICACION
 from datos.modelos import PaisModelo
 from negocio import TiendaServicio
 from presentacion.menu import menu_principal
@@ -186,16 +187,41 @@ def test_busquedas_por_rut_y_correo_muestran_el_usuario_normalizado(
     assert sum(usuario.correo in mensaje for mensaje in mensajes) == 2
 
 
-def test_login_usuario_solo_solicita_y_valida_correo() -> None:
-    solicitudes: list[str] = []
+def test_login_usuario_permite_cancelar_sin_solicitar_contrasenia(
+    base_pruebas,
+) -> None:
+    mensajes: list[str] = []
+    contrasenia_solicitada = False
 
-    correo = _presentacion().login_usuario(
-        entrada=lambda mensaje: (solicitudes.append(mensaje) or " ANA@EJEMPLO.CL "),
-        salida=lambda _: None,
+    def leer_contrasenia(_: str) -> str:
+        nonlocal contrasenia_solicitada
+        contrasenia_solicitada = True
+        return "no-debe-usarse"
+
+    resultado = _presentacion().login_usuario(
+        TiendaServicio(),
+        entrada=lambda _: "",
+        salida=mensajes.append,
+        lector_contrasenia=leer_contrasenia,
     )
 
-    assert correo == "ana@ejemplo.cl"
-    assert solicitudes == ["Correo: "]
+    assert resultado is None
+    assert contrasenia_solicitada is False
+    assert mensajes[-1] == "Inicio de sesión cancelado."
+
+
+def test_login_usuario_permite_cancelar_en_la_contrasenia(base_pruebas) -> None:
+    mensajes: list[str] = []
+
+    resultado = _presentacion().login_usuario(
+        TiendaServicio(),
+        entrada=lambda _: "ana@ejemplo.cl",
+        salida=mensajes.append,
+        lector_contrasenia=lambda _: "",
+    )
+
+    assert resultado is None
+    assert mensajes[-1] == "Inicio de sesión cancelado."
 
 
 def test_menu_principal_integra_submenu_usuarios_sin_alterar_salida(base_pruebas) -> None:
@@ -210,6 +236,32 @@ def test_menu_principal_integra_submenu_usuarios_sin_alterar_salida(base_pruebas
 
     assert any("Administrar usuarios" in salida for salida in salidas)
     assert any("USUARIOS" in salida for salida in salidas)
+    assert salidas[-1] == "Programa finalizado."
+
+
+def test_menu_principal_abre_acceso_y_continua_tras_login_correcto(
+    base_pruebas,
+) -> None:
+    pais = _pais()
+    usuario = _usuario(TiendaServicio(), pais)
+    entradas = iter(["6", " ANA@EJEMPLO.CL ", "0"])
+    salidas: list[str] = []
+
+    menu_principal(
+        TiendaServicio(),
+        entrada=lambda _: next(entradas),
+        salida=salidas.append,
+        lector_contrasenia=lambda _: "Segura1!",
+    )
+
+    texto = "\n".join(salidas)
+    assert "Iniciar sesión" in texto
+    assert f"Bienvenida, {usuario.nombre}." in salidas
+    posicion_bienvenida = salidas.index(f"Bienvenida, {usuario.nombre}.")
+    assert any(
+        NOMBRE_APLICACION in mensaje
+        for mensaje in salidas[posicion_bienvenida + 1 :]
+    )
     assert salidas[-1] == "Programa finalizado."
 
 

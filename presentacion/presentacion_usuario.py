@@ -342,8 +342,30 @@ def eliminar_usuario(
 
 
 def login_usuario(
-    *, entrada: Entrada = input, salida: Salida = print
-) -> str:
-    """Inicio del login del profesor; todavía no autentica contraseñas."""
+    servicio: TiendaServicio,
+    *,
+    entrada: Entrada = input,
+    salida: Salida = print,
+    lector_contrasenia: LectorContrasenia | None = None,
+) -> UsuarioModelo | None:
+    """Solicita credenciales sin aplicar las reglas de creación de claves."""
     salida(f"\n{NOMBRE_APLICACION} v{VERSION_APLICACION}")
-    return solicitar_correo("Correo: ", entrada=entrada, salida=salida)
+    correo = solicitar_correo(
+        "Correo (ENTER para cancelar): ",
+        entrada=entrada,
+        salida=salida,
+        opcional=True,
+    )
+    if correo is None:
+        salida("Inicio de sesión cancelado.")
+        return None
+
+    lector = lector_contrasenia or _leer_contrasenia_oculta
+    contrasenia = lector("Contraseña (ENTER para cancelar): ")
+    if not contrasenia:
+        salida("Inicio de sesión cancelado.")
+        return None
+
+    usuario = servicio.autenticar_usuario(correo, contrasenia)
+    salida(f"Bienvenida, {usuario.nombre}.")
+    return usuario
