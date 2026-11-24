@@ -17,7 +17,7 @@ from auxiliares.validaciones import (
     validar_rut,
 )
 from datos.modelos import PaisModelo, UsuarioModelo
-from negocio import TiendaServicio
+from negocio import ErrorDominio, TiendaServicio
 from presentacion.entradas import Entrada, Salida
 
 
@@ -244,8 +244,25 @@ def crear_usuario(
     salida: Salida = print,
     lector_contrasenia: LectorContrasenia | None = None,
 ) -> UsuarioModelo:
+    return _crear_usuario_con(
+        servicio.registrar_usuario,
+        servicio,
+        entrada=entrada,
+        salida=salida,
+        lector_contrasenia=lector_contrasenia,
+    )
+
+
+def _crear_usuario_con(
+    registrar: Callable[..., UsuarioModelo],
+    servicio: TiendaServicio,
+    *,
+    entrada: Entrada,
+    salida: Salida,
+    lector_contrasenia: LectorContrasenia | None,
+) -> UsuarioModelo:
     salida("\nIngrese los datos del usuario")
-    usuario = servicio.registrar_usuario(
+    usuario = registrar(
         rut=solicitar_rut("RUT (11.111.111-1): ", entrada=entrada, salida=salida),
         nombre=solicitar_dato_obligatorio("Nombre: ", entrada=entrada, salida=salida),
         apellido=solicitar_dato_obligatorio("Apellido: ", entrada=entrada, salida=salida),
@@ -265,6 +282,33 @@ def crear_usuario(
     )
     salida(f"Usuario registrado con ID {usuario.id_usuario}.")
     return usuario
+
+
+def preparar_primer_usuario(
+    servicio: TiendaServicio,
+    *,
+    entrada: Entrada = input,
+    salida: Salida = print,
+    lector_contrasenia: LectorContrasenia | None = None,
+) -> UsuarioModelo:
+    """Crea la primera cuenta solo durante una instalación vacía."""
+    if servicio.estado_acceso_usuarios() != "sin_usuarios":
+        raise ErrorDominio(
+            "La preparación del primer usuario solo está disponible "
+            "durante la instalación inicial."
+        )
+    if not servicio.listar_paises():
+        raise ErrorDominio(
+            "No existe un país habilitado para completar el primer usuario."
+        )
+    salida("Preparación inicial: cree la primera cuenta de acceso.")
+    return _crear_usuario_con(
+        servicio.registrar_primer_usuario,
+        servicio,
+        entrada=entrada,
+        salida=salida,
+        lector_contrasenia=lector_contrasenia,
+    )
 
 
 def modificar_usuario(

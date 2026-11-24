@@ -5,7 +5,7 @@
       "name": "Ejecutar tienda en línea",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/app.py",
+      "program": "${workspaceFolder}/main.py",
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}"
     },

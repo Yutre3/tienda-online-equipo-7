@@ -42,7 +42,7 @@ def test_tablas_muestran_registros_y_mensaje_vacio(base_pruebas) -> None:
     assert tabla_clientes([]) == "Sin clientes registrados."
 
 
-def test_menu_principal_permite_salir_sin_error(base_pruebas) -> None:
+def test_menu_principal_permite_cerrar_sesion_sin_error(base_pruebas) -> None:
     entradas = iter(["0"])
     salidas: list[str] = []
 
@@ -52,7 +52,7 @@ def test_menu_principal_permite_salir_sin_error(base_pruebas) -> None:
         salida=salidas.append,
     )
 
-    assert salidas[-1] == "Programa finalizado."
+    assert salidas[-1] == "Sesión cerrada."
 
 
 def test_menu_principal_rechaza_opcion_inexistente_y_continua(base_pruebas) -> None:
@@ -66,4 +66,4 @@ def test_menu_principal_rechaza_opcion_inexistente_y_continua(base_pruebas) -> N
     )
 
     assert "Opción inválida." in salidas
-    assert salidas[-1] == "Programa finalizado."
+    assert salidas[-1] == "Sesión cerrada."

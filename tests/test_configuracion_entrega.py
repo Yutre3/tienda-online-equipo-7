@@ -47,11 +47,21 @@ def test_configuracion_de_ejemplo_usa_usuario_limitado() -> None:
 
 def test_configuracion_vscode_es_json_valido_y_ofrece_tareas_clave() -> None:
     tareas = json.loads((RAIZ / ".vscode/tasks.json").read_text(encoding="utf-8"))
+    lanzamiento = json.loads(
+        (RAIZ / ".vscode/launch.json").read_text(encoding="utf-8")
+    )
     ajustes = json.loads((RAIZ / ".vscode/settings.json").read_text(encoding="utf-8"))
     extensiones = json.loads((RAIZ / ".vscode/extensions.json").read_text(encoding="utf-8"))
 
     etiquetas = {tarea["label"] for tarea in tareas["tasks"]}
     assert {"Preparar proyecto", "Ejecutar pruebas", "Ejecutar tienda"} <= etiquetas
+    tarea_tienda = next(
+        tarea for tarea in tareas["tasks"] if tarea["label"] == "Ejecutar tienda"
+    )
+    assert tarea_tienda["args"] == ["main.py"]
+    assert lanzamiento["configurations"][0]["program"] == (
+        "${workspaceFolder}/main.py"
+    )
     conexiones = {
         conexion["name"]: conexion for conexion in ajustes["sqltools.connections"]
     }
@@ -111,3 +121,25 @@ def test_archivos_locales_y_secretos_estan_ignorados() -> None:
 def test_documentacion_de_entrega_existe() -> None:
     assert (RAIZ / "README.md").stat().st_size > 3000
     assert (RAIZ / "docs/DIAGRAMA_UML.md").stat().st_size > 1000
+
+
+def test_readme_documenta_la_instalacion_y_el_flujo_evaluable() -> None:
+    texto = (RAIZ / "README.md").read_text(encoding="utf-8").lower()
+
+    for requisito in (
+        "luis huenchul",
+        "manuel huichapan",
+        "bastian lara",
+        "dependencias",
+        "sqlite",
+        "creación de la base de datos",
+        "mysql",
+        "primer usuario",
+        "inicio de sesión obligatorio",
+        "python main.py",
+        "python -m pytest -q",
+        "datos/repositorio/",
+        "presentación",
+        "negocio",
+    ):
+        assert requisito in texto

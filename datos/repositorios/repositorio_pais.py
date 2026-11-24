@@ -1,48 +1,27 @@
-"""Consultas Peewee de países disponibles para usuarios."""
+"""Compatibilidad con el repositorio funcional de países."""
 
 from datos.modelos import PaisModelo
-from negocio.entidades import ErrorDominio
+from datos.repositorio.paises import (
+    buscar_paises,
+    listado_paises,
+    obtener_pais_id,
+)
 
 
 class RepositorioPaises:
     def listar_habilitados(self) -> list[PaisModelo]:
-        return list(
-            PaisModelo.select()
-            .where(PaisModelo.habilitado == True)  # noqa: E712
-            .order_by(PaisModelo.pais)
-        )
+        return listado_paises()
 
     def buscar(self, nombre: str) -> list[PaisModelo]:
-        return list(
-            PaisModelo.select()
-            .where(
-                (PaisModelo.pais.contains(nombre.strip()))
-                & (PaisModelo.habilitado == True)  # noqa: E712
-            )
-            .order_by(PaisModelo.pais)
-        )
+        return buscar_paises(nombre)
 
     def obtener(self, identificador: int) -> PaisModelo:
-        pais = (
-            PaisModelo.select()
-            .where(
-                (PaisModelo.id_pais == identificador)
-                & (PaisModelo.habilitado == True)  # noqa: E712
-            )
-            .first()
-        )
-        if pais is None:
-            raise ErrorDominio("No existe un país habilitado con ese ID.")
-        return pais
+        return obtener_pais_id(identificador)
 
 
-def listado_paises() -> list[PaisModelo]:
-    return RepositorioPaises().listar_habilitados()
-
-
-def buscar_paises(nombre_pais: str) -> list[PaisModelo]:
-    return RepositorioPaises().buscar(nombre_pais)
-
-
-def obtener_pais_id(identificador: int) -> PaisModelo:
-    return RepositorioPaises().obtener(identificador)
+__all__ = [
+    "RepositorioPaises",
+    "buscar_paises",
+    "listado_paises",
+    "obtener_pais_id",
+]

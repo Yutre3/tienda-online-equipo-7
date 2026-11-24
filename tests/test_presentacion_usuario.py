@@ -3,7 +3,6 @@ import importlib
 
 import bcrypt
 
-from auxiliares.info_app import NOMBRE_APLICACION
 from datos.modelos import PaisModelo
 from negocio import TiendaServicio
 from presentacion.menu import menu_principal
@@ -236,33 +235,23 @@ def test_menu_principal_integra_submenu_usuarios_sin_alterar_salida(base_pruebas
 
     assert any("Administrar usuarios" in salida for salida in salidas)
     assert any("USUARIOS" in salida for salida in salidas)
-    assert salidas[-1] == "Programa finalizado."
+    assert salidas[-1] == "Sesión cerrada."
 
 
-def test_menu_principal_abre_acceso_y_continua_tras_login_correcto(
-    base_pruebas,
-) -> None:
-    pais = _pais()
-    usuario = _usuario(TiendaServicio(), pais)
-    entradas = iter(["6", " ANA@EJEMPLO.CL ", "0"])
+def test_menu_principal_no_ofrece_una_ruta_de_login_posterior(base_pruebas) -> None:
+    entradas = iter(["6", "0"])
     salidas: list[str] = []
 
     menu_principal(
         TiendaServicio(),
         entrada=lambda _: next(entradas),
         salida=salidas.append,
-        lector_contrasenia=lambda _: "Segura1!",
     )
 
     texto = "\n".join(salidas)
-    assert "Iniciar sesión" in texto
-    assert f"Bienvenida, {usuario.nombre}." in salidas
-    posicion_bienvenida = salidas.index(f"Bienvenida, {usuario.nombre}.")
-    assert any(
-        NOMBRE_APLICACION in mensaje
-        for mensaje in salidas[posicion_bienvenida + 1 :]
-    )
-    assert salidas[-1] == "Programa finalizado."
+    assert "Iniciar sesión" not in texto
+    assert "Opción inválida." in salidas
+    assert salidas[-1] == "Sesión cerrada."
 
 
 def test_submenu_usuarios_ofrece_busquedas_por_rut_y_correo(base_pruebas) -> None:
@@ -284,4 +273,4 @@ def test_submenu_usuarios_ofrece_busquedas_por_rut_y_correo(base_pruebas) -> Non
     assert "Buscar por correo" in texto
     assert texto.count(usuario.rut) == 2
     assert texto.count(usuario.correo) == 2
-    assert salidas[-1] == "Programa finalizado."
+    assert salidas[-1] == "Sesión cerrada."

@@ -16,7 +16,6 @@ from presentacion.presentacion_usuario import (
     mostrar_listado_usuarios,
     mostrar_usuario_por_correo,
     mostrar_usuario_por_rut,
-    login_usuario,
 )
 
 
@@ -206,18 +205,12 @@ def menu_principal(
             salida(tabla_pedidos(servicio.listar_pedidos())),
         ),
         "5": lambda: _menu_usuarios(servicio, entrada, salida),
-        "6": lambda: login_usuario(
-            servicio,
-            entrada=entrada,
-            salida=salida,
-            lector_contrasenia=lector_contrasenia,
-        ),
     }
     while True:
         _mostrar_opciones(f"{NOMBRE_APLICACION} v{VERSION_APLICACION}", OPCIONES_MENU, salida)
         opcion = entrada("Seleccione una opción: ").strip()
         if opcion == "0":
-            salida("Programa finalizado.")
+            salida("Sesión cerrada.")
             return
         accion = acciones.get(opcion)
         if accion is None:

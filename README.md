@@ -4,12 +4,15 @@
 
 Aplicación de consola desarrollada en Python para administrar clientes, productos, inventario y pedidos. El proyecto adapta al tema de tienda en línea la separación modular del repositorio del profesor `baileytorch/IEI_N2_C2_POO` y demuestra programación orientada a objetos, ORM y conexión segura a MySQL/MariaDB.
 
+Esta versión continúa el trabajo de la Evaluación 2 y agrega la estructura, los repositorios funcionales y el inicio de sesión obligatorio solicitados para la Evaluación 3. No reemplaza el CRUD ni las reglas de inventario anteriores.
+
 ## Funciones terminadas
 
 - Clientes: registrar, listar, editar y eliminar.
 - Productos: registrar, listar, editar y eliminar con SKU único, precio y stock.
 - Pedidos: crear, consultar detalle, agregar o quitar productos, confirmar, cancelar y eliminar.
 - Usuarios: registrar, listar, actualizar y deshabilitar con RUT chileno validado y contraseña protegida con bcrypt.
+- Acceso: la aplicación solicita correo y contraseña antes de mostrar cualquier operación del menú.
 - Inventario transaccional: agregar descuenta stock; quitar, cancelar o eliminar devuelve las unidades correspondientes.
 - Validación de nombres, correos, SKU, precios, cantidades, estados e identificadores.
 - Tablas de consola con PrettyTable y mensajes comprensibles ante entradas incorrectas.
@@ -20,14 +23,17 @@ Aplicación de consola desarrollada en Python para administrar clientes, product
 ## Arquitectura
 
 ```text
-TI3021_U2_EF01/
-├── app.py                    Punto de entrada y conexión
+tienda-online-equipo-7/
+├── main.py                   Punto de entrada oficial
+├── app.py                    Inicialización compatible y conexión
 ├── auxiliares/               Nombre y opciones compartidas
 ├── datos/
 │   ├── conexion.py           Inicialización de Peewee
+│   ├── model_base.py         ModelBase compartido por todos los modelos
 │   ├── configuracion.py      Lectura segura de .env
 │   ├── modelos/              Clases ORM
-│   ├── repositorios/         CRUD y consultas
+│   ├── repositorio/          Funciones CRUD canónicas
+│   ├── repositorios/         Adaptadores para compatibilidad anterior
 │   └── sql/                  Esquema, usuario y datos de ejemplo
 ├── negocio/
 │   ├── entidades.py          Clases POO y validaciones
@@ -41,14 +47,16 @@ TI3021_U2_EF01/
 └── .vscode/                  Ejecución, pruebas y SQLTools
 ```
 
-La presentación no contiene consultas SQL. La capa de negocio no conoce detalles de la consola. Los repositorios convierten entre objetos del dominio y modelos Peewee, lo que mantiene alta cohesión y bajo acoplamiento.
+La presentación no contiene consultas SQL. La capa de negocio no conoce detalles de la consola. Las funciones de `datos/repositorio/` convierten entre objetos del dominio y modelos Peewee; las clases de `datos/repositorios/` delegan en ellas para no romper las importaciones anteriores. Todos los modelos heredan de `datos/model_base.py:ModelBase`, que usa la conexión compartida.
 
-## Requisitos
+## Dependencias e instalación
 
 - Python 3.12 o superior.
 - Visual Studio Code con las extensiones recomendadas.
 - MySQL 8 o MariaDB 10.4 es opcional; XAMPP es válido.
 - Git para clonar y compartir el proyecto.
+
+Las dependencias directas están fijadas en `requirements.txt`: Peewee, PyMySQL, python-decouple, PrettyTable, bcrypt, maskpass y pytest. No es necesario instalarlas una por una; los pasos siguientes usan el archivo completo.
 
 ## Preparación automática en Visual Studio Code
 
@@ -83,8 +91,9 @@ cp .env.example .env
 
 Seleccione **Terminal > Ejecutar tarea > Verificar conexión de base de datos**. Esta comprobación utiliza el motor indicado en `.env`, consulta las seis tablas (`paises`, `usuarios`, `clientes`, `productos`, `pedidos` y `detalles_pedido`) y muestra su cantidad de registros sin cambiarlos. Para comprobar la base de phpMyAdmin debe configurar `DB_ENGINE=mysql` y las credenciales reales en el `.env` local (no en GitHub); MySQL/XAMPP debe estar iniciado. Para la base SQLite portátil use `DB_ENGINE=sqlite` y ejecute primero **Ejecutar tienda** para crear las tablas si aún no existen.
 
-## Base portátil incluida
-La configuración predeterminada usa SQLite. Al ejecutar `app.py` se crea automáticamente `datos/tienda_online.db`, junto con todas las tablas y los mismos datos iniciales de demostración. Cada compañero obtiene su propia copia editable y persistente, sin depender de que el computador de otro integrante permanezca encendido.
+## Configuración SQLite y creación de la base de datos
+
+La configuración predeterminada usa SQLite. Al ejecutar `main.py`, Peewee crea de forma segura `datos/tienda_online.db` y las seis tablas ausentes: `paises`, `usuarios`, `clientes`, `productos`, `pedidos` y `detalles_pedido`. Se usa `safe=True`; el inicio no ejecuta `DROP TABLE`, no reinicia la base y no borra registros. También se cargan de forma idempotente Chile y los datos de demostración de clientes/productos. Cada compañero obtiene su propia copia editable y persistente, sin depender de que el computador de otro integrante permanezca encendido.
 
 En Visual Studio Code se puede explorar mediante **SQLTools > Tienda Online (SQLite portátil)**. Esta modalidad evita el problema de compartir una dirección `localhost`, ya que `localhost` siempre apunta al computador de quien ejecuta el proyecto.
 
@@ -112,15 +121,33 @@ DB_USER=tienda_app
 DB_PASSWORD=SU_CLAVE_LOCAL
 ```
 
+Esta configuración es opcional. No copie una contraseña real al README, a `.env.example` ni a Git; `.env` permanece ignorado. La compatibilidad MySQL debe verificarse en cada equipo con credenciales locales autorizadas.
+
+## Preparación del primer usuario
+
+En una instalación nueva, la aplicación detecta que la tabla `usuarios` está vacía y solicita RUT, nombre, apellido, correo, país, fecha de nacimiento, género y una contraseña oculta mediante maskpass. La clave no tiene un valor predeterminado: se valida y se guarda solo como hash bcrypt.
+
+Este procedimiento aparece exclusivamente cuando no existe ningún usuario. Si una instalación antigua ya contiene cuentas pero ninguna tiene una contraseña bcrypt válida, no se crea una cuenta alternativa. Use de manera local y explícita:
+
+```bash
+python -m auxiliares.recuperar_acceso
+```
+
+La recuperación exige el correo de una cuenta existente, solicita una nueva clave oculta y cambia solo su hash. No crea usuarios y no habilita cuentas deshabilitadas.
+
+## Inicio de sesión obligatorio
+
+El flujo oficial es **Aplicación → Login → Validación → Menú principal**. El login solicita correo, oculta la contraseña con maskpass, busca mediante Peewee y valida con `bcrypt.checkpw()`. Una cuenta inexistente, deshabilitada, con hash inválido o con clave incorrecta no puede abrir el menú. La persona puede reintentar o salir. La opción `0` del menú cierra la sesión y regresa al formulario de acceso.
+
 ## Ejecutar
 
 Desde una terminal con el entorno activado:
 
 ```bash
-python app.py
+python main.py
 ```
 
-También puede seleccionar **Ejecutar tienda** en las tareas de Visual Studio Code o la configuración **Ejecutar tienda en línea** en **Ejecutar y depurar**. Al conectarse se muestra `Conexión exitosa. Base de datos preparada.` y aparece el menú principal.
+También puede seleccionar **Ejecutar tienda** en las tareas de Visual Studio Code o la configuración **Ejecutar tienda en línea** en **Ejecutar y depurar**. Al conectarse se muestra `Conexión exitosa. Base de datos preparada.` y aparece primero el login. `python app.py` se conserva como entrada compatible y ejecuta el mismo flujo, sin duplicar inicialización.
 
 El orden recomendado para una demostración es:
 
@@ -171,7 +198,7 @@ Si PowerShell impide activar el entorno, puede ejecutar directamente:
 
 ```powershell
 .venv\Scripts\python.exe -m pytest -q
-.venv\Scripts\python.exe app.py
+.venv\Scripts\python.exe main.py
 ```
 
 Si un puerto de XAMPP es distinto de 3306, cambie `DB_PORT` en `.env` y el campo `port` de la conexión SQLTools local. No suba esa configuración si incluye credenciales personales.
