@@ -6,6 +6,5 @@ OPCIONES_MENU = {
     "3": "Administrar pedidos",
     "4": "Ver resumen general",
     "5": "Administrar usuarios",
-    "6": "Iniciar sesión",
-    "0": "Salir",
+    "0": "Cerrar sesión",
 }

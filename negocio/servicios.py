@@ -141,6 +141,29 @@ class TiendaServicio:
             raise ErrorDominio(mensaje)
         return usuario
 
+    def estado_acceso_usuarios(self) -> str:
+        """Resume si la instalación puede presentar el formulario de acceso."""
+        usuarios = self.listar_usuarios(None)
+        if not usuarios:
+            return "sin_usuarios"
+        habilitados = [usuario for usuario in usuarios if usuario.habilitado]
+        if not habilitados:
+            return "sin_habilitados"
+        if any(
+            _preparar_hash_bcrypt(usuario.password)[1]
+            for usuario in habilitados
+        ):
+            return "disponible"
+        return "sin_password_valido"
+
+    def cambiar_contrasenia_usuario_existente(
+        self, correo: str, contrasenia: str
+    ) -> UsuarioModelo:
+        """Reemplaza solo el hash de una cuenta ya existente."""
+        usuario = self.buscar_usuario_correo(correo)
+        usuario.password = crear_hash_contrasenia(contrasenia)
+        return self._usuarios.guardar(usuario)
+
     def actualizar_usuario(
         self,
         rut_actual: str,
