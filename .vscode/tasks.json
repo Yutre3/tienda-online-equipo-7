@@ -52,7 +52,7 @@
       "type": "process",
       "command": ".venv/bin/python",
       "windows": { "command": ".venv\\Scripts\\python.exe" },
-      "args": ["app.py"],
+      "args": ["main.py"],
       "group": { "kind": "build", "isDefault": true },
       "problemMatcher": []
     },
